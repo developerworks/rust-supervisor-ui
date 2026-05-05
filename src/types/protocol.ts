@@ -226,6 +226,13 @@ export type ServerMessage =
   | { type: "event"; target_id: string; event: EventRecord }
   | { type: "log"; target_id: string; log: LogRecord }
   | { type: "state_delta"; target_id: string; delta: DashboardStateDelta }
+  | {
+      type: "dropped_count";
+      target_id: string;
+      dropped_event_count: number;
+      dropped_log_count?: number;
+    }
+  | { type: "connection_state"; target_id: string; state: ConnectionState }
   | { type: "command_result"; target_id: string; result: ControlCommandResult }
   | { type: "audit_event"; target_id: string; audit: AuditEvent }
   | { type: "error"; error: DashboardError };

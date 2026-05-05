@@ -64,6 +64,25 @@ function handleServerMessage(message: ServerMessage): void {
     case "state_delta":
       snapshotStore.applyStateDelta(message.target_id, message.delta);
       break;
+    case "dropped_count":
+      eventStore.setDroppedCount(
+        message.target_id,
+        message.dropped_event_count,
+        message.dropped_log_count
+      );
+      break;
+    case "connection_state":
+      snapshotStore.setTargetConnectionState(message.target_id, message.state);
+      if (message.state === "unavailable") {
+        snapshotStore.addDiagnostic({
+          code: "target_unavailable",
+          stage: "session",
+          message: `${message.target_id} is unavailable. A fresh snapshot is required before events resume.`,
+          target_id: message.target_id,
+          retryable: true
+        });
+      }
+      break;
     case "command_result":
       lastCommandResult.value = `${message.result.command_id} ${message.result.status}`;
       if (message.result.state_delta) {

@@ -46,4 +46,12 @@ describe("eventStore", () => {
     expect(eventStore.state.sequenceDiagnostics[0]).toContain("sequence 999");
     expect(eventStore.state.events.map((event) => event.sequence)).toEqual([999, 1001, 1002, 1003]);
   });
+
+  it("updates dropped counts from relay stream diagnostics", () => {
+    eventStore.applySnapshot(paymentsSnapshot);
+    eventStore.setDroppedCount("payments-worker-a", 7, 3);
+
+    expect(eventStore.droppedEventTotal.value).toBe(7);
+    expect(eventStore.droppedLogTotal.value).toBe(3);
+  });
 });

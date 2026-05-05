@@ -54,4 +54,20 @@ describe("snapshotStore", () => {
 
     expect(snapshotStore.state.diagnostics[0].code).toBe("target_unavailable");
   });
+
+  it("updates connection state from relay stream messages", () => {
+    snapshotStore.applySessionEstablished({
+      type: "session_established",
+      session_id: "session-test",
+      identity: {
+        principal: "operator@example.test",
+        source: "mtls"
+      },
+      targets: mockTargets
+    });
+
+    snapshotStore.setTargetConnectionState("payments-worker-a", "reconnecting");
+
+    expect(snapshotStore.state.targets[0].connection_state).toBe("reconnecting");
+  });
 });
