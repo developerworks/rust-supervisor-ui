@@ -3,11 +3,11 @@ import { computed } from "vue";
 import { Activity, AlertTriangle, Ban, Cable, RefreshCcw, Server } from "lucide-vue-next";
 import Badge from "@/components/ui/Badge.vue";
 import Card from "@/components/ui/Card.vue";
-import { snapshotStore } from "@/state/snapshotStore";
+import { stateStore } from "@/state/stateStore";
 import type { ConnectionState } from "@/types/protocol";
 
-const targets = computed(() => snapshotStore.state.targets);
-const selectedTargetId = computed(() => snapshotStore.state.selectedTargetId);
+const targets = computed(() => stateStore.state.targets);
+const selectedTargetId = computed(() => stateStore.state.selectedTargetId);
 
 function statusLabel(state: ConnectionState): string {
   const labels: Record<ConnectionState, string> = {
@@ -70,7 +70,7 @@ function statusIcon(state: ConnectionState) {
         type="button"
         class="w-full rounded-md border p-3 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         :class="target.target_id === selectedTargetId ? 'border-primary bg-blue-50' : 'border-border bg-card'"
-        @click="snapshotStore.selectTarget(target.target_id)"
+        @click="stateStore.selectTarget(target.target_id)"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">

@@ -16,7 +16,7 @@ import {
   type DashboardSessionClient
 } from "@/api/session";
 import { eventStore } from "@/state/eventStore";
-import { snapshotStore } from "@/state/snapshotStore";
+import { stateStore } from "@/state/stateStore";
 import type { ClientMessage, ControlCommandRequest, ServerMessage } from "@/types/protocol";
 
 const sessionClient = ref<DashboardSessionClient | null>(null);
@@ -31,17 +31,17 @@ const connectionLabel = computed(() => {
 });
 
 function connect(): void {
-  snapshotStore.reset();
+  stateStore.reset();
   eventStore.reset();
   lastCommandResult.value = "";
-  snapshotStore.state.connectionState = relayUrl.startsWith("mock://") ? "mock" : "connecting";
+  stateStore.state.connectionState = relayUrl.startsWith("mock://") ? "mock" : "connecting";
   const client = createDashboardSessionClient(relayUrl);
   sessionClient.value = client;
   client.connect({
     onMessage: handleServerMessage,
-    onError: (error) => snapshotStore.addDiagnostic(error),
+    onError: (error) => stateStore.addDiagnostic(error),
     onClose: () => {
-      snapshotStore.state.connectionState = "closed";
+      stateStore.state.connectionState = "closed";
     }
   });
 }
@@ -49,11 +49,11 @@ function connect(): void {
 function handleServerMessage(message: ServerMessage): void {
   switch (message.type) {
     case "session_established":
-      snapshotStore.applySessionEstablished(message);
+      stateStore.applySessionEstablished(message);
       break;
-    case "snapshot":
-      snapshotStore.applySnapshot(message.target_id, message.snapshot);
-      eventStore.applySnapshot(message.snapshot);
+    case "state":
+      stateStore.applyDashboardState(message.target_id, message.state);
+      eventStore.applyDashboardState(message.state);
       break;
     case "event":
       eventStore.appendEvent(message.event);
@@ -62,7 +62,7 @@ function handleServerMessage(message: ServerMessage): void {
       eventStore.appendLog(message.log);
       break;
     case "state_delta":
-      snapshotStore.applyStateDelta(message.target_id, message.delta);
+      stateStore.applyStateDelta(message.target_id, message.delta);
       break;
     case "dropped_count":
       eventStore.setDroppedCount(
@@ -72,12 +72,12 @@ function handleServerMessage(message: ServerMessage): void {
       );
       break;
     case "connection_state":
-      snapshotStore.setTargetConnectionState(message.target_id, message.state);
+      stateStore.setTargetConnectionState(message.target_id, message.state);
       if (message.state === "unavailable") {
-        snapshotStore.addDiagnostic({
+        stateStore.addDiagnostic({
           code: "target_unavailable",
           stage: "session",
-          message: `${message.target_id} is unavailable. A fresh snapshot is required before events resume.`,
+          message: `${message.target_id} is unavailable. A fresh state is required before events resume.`,
           target_id: message.target_id,
           retryable: true
         });
@@ -86,14 +86,14 @@ function handleServerMessage(message: ServerMessage): void {
     case "command_result":
       lastCommandResult.value = `${message.result.command_id} ${message.result.status}`;
       if (message.result.state_delta) {
-        snapshotStore.applyStateDelta(message.target_id, message.result.state_delta);
+        stateStore.applyStateDelta(message.target_id, message.result.state_delta);
       }
       break;
     case "audit_event":
       eventStore.appendAudit(message.audit);
       break;
     case "error":
-      snapshotStore.addDiagnostic(message.error);
+      stateStore.addDiagnostic(message.error);
       break;
   }
 }
@@ -105,11 +105,11 @@ function sendClientMessage(message: ClientMessage): void {
 function sendCommand(request: ControlCommandRequest): void {
   const validation = validateCommandRequest(
     request,
-    snapshotStore.state.controlSessionEstablished,
+    stateStore.state.controlSessionEstablished,
     relayUrl
   );
   if (!validation.valid && validation.error) {
-    snapshotStore.addDiagnostic(validation.error);
+    stateStore.addDiagnostic(validation.error);
     return;
   }
   sendClientMessage(request);
@@ -142,11 +142,11 @@ onBeforeUnmount(() => {
         <div class="flex flex-wrap items-center gap-2">
           <Badge variant="success">
             <LockKeyhole class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {{ snapshotStore.state.identity?.principal ?? "等待身份" }}
+            {{ stateStore.state.identity?.principal ?? "等待身份" }}
           </Badge>
           <Badge variant="outline">
             <RadioTower class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {{ snapshotStore.state.connectionState }}
+            {{ stateStore.state.connectionState }}
           </Badge>
           <Button variant="outline" size="sm" @click="connect">
             <RefreshCw class="h-4 w-4" aria-hidden="true" />
@@ -181,11 +181,11 @@ onBeforeUnmount(() => {
           <p v-if="lastCommandResult" class="mb-3 rounded-md border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-800">
             command result(命令结果): {{ lastCommandResult }}
           </p>
-          <div v-if="snapshotStore.state.diagnostics.length === 0" class="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+          <div v-if="stateStore.state.diagnostics.length === 0" class="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
             当前没有结构化错误.
           </div>
           <ul v-else class="space-y-2" data-testid="diagnostics">
-            <li v-for="error in snapshotStore.state.diagnostics" :key="`${error.code}:${error.message}`" class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <li v-for="error in stateStore.state.diagnostics" :key="`${error.code}:${error.message}`" class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
               <p class="font-semibold">{{ error.code }}</p>
               <p class="mt-1 leading-5">{{ error.message }}</p>
             </li>

@@ -145,7 +145,7 @@ export interface LogRecord {
   occurred_at: string;
 }
 
-export interface DashboardSnapshot {
+export interface DashboardState {
   target: TargetIdentity;
   topology: SupervisorTopology;
   runtime_state: RuntimeState[];
@@ -155,11 +155,11 @@ export interface DashboardSnapshot {
   dropped_log_count: number;
   config_version: string;
   generated_at: string;
-  snapshot_generation: number;
+  state_generation: number;
 }
 
 export interface DashboardStateDelta {
-  snapshot_generation?: number;
+  state_generation?: number;
   runtime_state?: RuntimeState[];
   connection_state?: ConnectionState;
 }
@@ -222,7 +222,7 @@ export interface FilterUpdate {
 
 export type ServerMessage =
   | SessionEstablishedMessage
-  | { type: "snapshot"; target_id: string; snapshot: DashboardSnapshot }
+  | { type: "state"; target_id: string; state: DashboardState }
   | { type: "event"; target_id: string; event: EventRecord }
   | { type: "log"; target_id: string; log: LogRecord }
   | { type: "state_delta"; target_id: string; delta: DashboardStateDelta }

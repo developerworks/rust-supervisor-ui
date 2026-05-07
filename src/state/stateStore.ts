@@ -2,7 +2,7 @@ import { computed, reactive } from "vue";
 import type {
   ConnectionState,
   DashboardError,
-  DashboardSnapshot,
+  DashboardState,
   DashboardStateDelta,
   RemoteIdentity,
   RuntimeState,
@@ -11,25 +11,25 @@ import type {
   TargetSummary
 } from "@/types/protocol";
 
-interface SnapshotStoreState {
+interface DashboardStateStore {
   sessionId: string | null;
   identity: RemoteIdentity | null;
   controlSessionEstablished: boolean;
   connectionState: "idle" | "connecting" | "established" | "closed" | "mock";
   targets: TargetSummary[];
-  snapshots: Record<string, DashboardSnapshot>;
+  states: Record<string, DashboardState>;
   selectedTargetId: string | null;
   selectedNodePath: string | null;
   diagnostics: DashboardError[];
 }
 
-const state = reactive<SnapshotStoreState>({
+const state = reactive<DashboardStateStore>({
   sessionId: null,
   identity: null,
   controlSessionEstablished: false,
   connectionState: "idle",
   targets: [],
-  snapshots: {},
+  states: {},
   selectedTargetId: null,
   selectedNodePath: null,
   diagnostics: []
@@ -39,28 +39,28 @@ const selectedTarget = computed(() =>
   state.targets.find((target) => target.target_id === state.selectedTargetId) ?? null
 );
 
-const selectedSnapshot = computed(() =>
-  state.selectedTargetId ? state.snapshots[state.selectedTargetId] ?? null : null
+const selectedDashboardState = computed(() =>
+  state.selectedTargetId ? state.states[state.selectedTargetId] ?? null : null
 );
 
 const selectedRuntimeState = computed(() => {
-  const snapshot = selectedSnapshot.value;
-  if (!snapshot || !state.selectedNodePath) {
+  const dashboardState = selectedDashboardState.value;
+  if (!dashboardState || !state.selectedNodePath) {
     return null;
   }
   return (
-    snapshot.runtime_state.find((runtimeState) => runtimeState.child_path === state.selectedNodePath) ??
+    dashboardState.runtime_state.find((runtimeState) => runtimeState.child_path === state.selectedNodePath) ??
     null
   );
 });
 
 const selectedNode = computed(() => {
-  const snapshot = selectedSnapshot.value;
-  if (!snapshot || !state.selectedNodePath) {
+  const dashboardState = selectedDashboardState.value;
+  if (!dashboardState || !state.selectedNodePath) {
     return null;
   }
   return (
-    snapshot.topology.nodes.find((node) => node.path === state.selectedNodePath) ?? null
+    dashboardState.topology.nodes.find((node) => node.path === state.selectedNodePath) ?? null
   );
 });
 
@@ -76,24 +76,24 @@ const selectedNodeDetail = computed(() => {
 });
 
 const stateCounts = computed(() => {
-  const snapshot = selectedSnapshot.value;
+  const dashboardState = selectedDashboardState.value;
   const counts: Record<string, number> = {};
-  if (!snapshot) {
+  if (!dashboardState) {
     return counts;
   }
-  for (const runtimeState of snapshot.runtime_state) {
+  for (const runtimeState of dashboardState.runtime_state) {
     counts[runtimeState.lifecycle_state] = (counts[runtimeState.lifecycle_state] ?? 0) + 1;
   }
   return counts;
 });
 
-function resetSnapshotStore(): void {
+function resetDashboardStateStore(): void {
   state.sessionId = null;
   state.identity = null;
   state.controlSessionEstablished = false;
   state.connectionState = "idle";
   state.targets = [];
-  state.snapshots = {};
+  state.states = {};
   state.selectedTargetId = null;
   state.selectedNodePath = null;
   state.diagnostics = [];
@@ -113,8 +113,8 @@ function applySessionEstablished(message: Extract<ServerMessage, { type: "sessio
   }
 }
 
-function applySnapshot(targetId: string, snapshot: DashboardSnapshot): void {
-  state.snapshots[targetId] = snapshot;
+function applyDashboardState(targetId: string, dashboardState: DashboardState): void {
+  state.states[targetId] = dashboardState;
   const target = state.targets.find((item) => item.target_id === targetId);
   if (target && target.connection_state !== "unavailable" && target.connection_state !== "expired") {
     target.connection_state = "connected";
@@ -123,24 +123,24 @@ function applySnapshot(targetId: string, snapshot: DashboardSnapshot): void {
     selectTarget(targetId);
   }
   if (state.selectedTargetId === targetId && !state.selectedNodePath) {
-    state.selectedNodePath = snapshot.topology.root.path;
+    state.selectedNodePath = dashboardState.topology.root.path;
   }
 }
 
 function applyStateDelta(targetId: string, delta: DashboardStateDelta): void {
-  const snapshot = state.snapshots[targetId];
-  if (!snapshot) {
+  const dashboardState = state.states[targetId];
+  if (!dashboardState) {
     return;
   }
 
-  if (typeof delta.snapshot_generation === "number") {
-    snapshot.snapshot_generation = delta.snapshot_generation;
+  if (typeof delta.state_generation === "number") {
+    dashboardState.state_generation = delta.state_generation;
   }
 
   if (delta.runtime_state) {
     for (const runtimeState of delta.runtime_state) {
-      upsertRuntimeState(snapshot.runtime_state, runtimeState);
-      const node = snapshot.topology.nodes.find((item) => item.path === runtimeState.child_path);
+      upsertRuntimeState(dashboardState.runtime_state, runtimeState);
+      const node = dashboardState.topology.nodes.find((item) => item.path === runtimeState.child_path);
       if (node) {
         node.state_summary = runtimeState.lifecycle_state;
       }
@@ -163,14 +163,14 @@ function upsertRuntimeState(states: RuntimeState[], next: RuntimeState): void {
 
 function selectTarget(targetId: string): void {
   state.selectedTargetId = targetId;
-  const snapshot = state.snapshots[targetId];
-  state.selectedNodePath = snapshot?.topology.root.path ?? null;
+  const dashboardState = state.states[targetId];
+  state.selectedNodePath = dashboardState?.topology.root.path ?? null;
   const target = state.targets.find((item) => item.target_id === targetId);
   if (target?.connection_state === "unavailable") {
     addDiagnostic({
       code: "target_unavailable",
       stage: "session",
-      message: `${target.display_name} is unavailable. A fresh snapshot is required before events resume.`,
+      message: `${target.display_name} is unavailable. A fresh state is required before events resume.`,
       target_id: target.target_id,
       retryable: true
     });
@@ -199,24 +199,24 @@ function addDiagnostic(error: DashboardError): void {
 }
 
 function findNode(targetId: string, nodePath: string): SupervisorNode | null {
-  return state.snapshots[targetId]?.topology.nodes.find((node) => node.path === nodePath) ?? null;
+  return state.states[targetId]?.topology.nodes.find((node) => node.path === nodePath) ?? null;
 }
 
-export const snapshotStore = {
+export const stateStore = {
   state,
   selectedTarget,
-  selectedSnapshot,
+  selectedDashboardState,
   selectedNode,
   selectedRuntimeState,
   selectedNodeDetail,
   stateCounts,
   applySessionEstablished,
-  applySnapshot,
+  applyDashboardState,
   applyStateDelta,
   selectTarget,
   selectNode,
   setTargetConnectionState,
   addDiagnostic,
   findNode,
-  reset: resetSnapshotStore
+  reset: resetDashboardStateStore
 };

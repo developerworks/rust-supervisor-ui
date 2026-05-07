@@ -1,7 +1,7 @@
 import { computed, reactive } from "vue";
 import type {
   AuditEvent,
-  DashboardSnapshot,
+  DashboardState,
   EventRecord,
   FilterUpdate,
   LifecycleState,
@@ -111,13 +111,13 @@ function resetEventStore(): void {
   state.filters = emptyFilters();
 }
 
-function applySnapshot(snapshot: DashboardSnapshot): void {
-  state.droppedEventsByTarget[snapshot.target.target_id] = snapshot.dropped_event_count;
-  state.droppedLogsByTarget[snapshot.target.target_id] = snapshot.dropped_log_count;
-  for (const event of snapshot.recent_events) {
+function applyDashboardState(dashboardState: DashboardState): void {
+  state.droppedEventsByTarget[dashboardState.target.target_id] = dashboardState.dropped_event_count;
+  state.droppedLogsByTarget[dashboardState.target.target_id] = dashboardState.dropped_log_count;
+  for (const event of dashboardState.recent_events) {
     appendEvent(event);
   }
-  for (const log of snapshot.recent_logs) {
+  for (const log of dashboardState.recent_logs) {
     appendLog(log);
   }
 }
@@ -290,7 +290,7 @@ export const eventStore = {
   filteredRecords,
   droppedEventTotal,
   droppedLogTotal,
-  applySnapshot,
+  applyDashboardState,
   appendEvent,
   appendLog,
   appendAudit,

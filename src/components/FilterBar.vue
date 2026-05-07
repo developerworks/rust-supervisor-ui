@@ -7,7 +7,7 @@ import Input from "@/components/ui/Input.vue";
 import Label from "@/components/ui/Label.vue";
 import Select from "@/components/ui/Select.vue";
 import { eventStore } from "@/state/eventStore";
-import { snapshotStore } from "@/state/snapshotStore";
+import { stateStore } from "@/state/stateStore";
 import type { FilterUpdate, LifecycleState, Severity } from "@/types/protocol";
 
 const emit = defineEmits<{
@@ -24,7 +24,7 @@ const correlationId = ref("");
 
 const targetOptions = computed(() => [
   { value: "", label: "全部目标" },
-  ...snapshotStore.state.targets.map((target) => ({
+  ...stateStore.state.targets.map((target) => ({
     value: target.target_id,
     label: target.display_name
   }))
@@ -32,8 +32,8 @@ const targetOptions = computed(() => [
 
 const childPathOptions = computed(() => {
   const paths = new Set<string>();
-  Object.values(snapshotStore.state.snapshots).forEach((snapshot) => {
-    snapshot.topology.nodes.forEach((node) => paths.add(node.path));
+  Object.values(stateStore.state.states).forEach((state) => {
+    state.topology.nodes.forEach((node) => paths.add(node.path));
   });
   return [
     { value: "", label: "全部子任务" },

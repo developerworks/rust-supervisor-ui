@@ -7,7 +7,7 @@ import Label from "@/components/ui/Label.vue";
 import Select from "@/components/ui/Select.vue";
 import Textarea from "@/components/ui/Textarea.vue";
 import ConfirmCommandDialog from "@/components/ConfirmCommandDialog.vue";
-import { snapshotStore } from "@/state/snapshotStore";
+import { stateStore } from "@/state/stateStore";
 import type { ControlCommandName, ControlCommandRequest } from "@/types/protocol";
 import { createCommandId, isDangerousCommandName } from "@/types/protocol";
 
@@ -20,11 +20,11 @@ const reason = ref("");
 const localError = ref("");
 const confirmOpen = ref(false);
 
-const selectedTarget = computed(() => snapshotStore.selectedTarget.value);
-const selectedNode = computed(() => snapshotStore.selectedNode.value);
+const selectedTarget = computed(() => stateStore.selectedTarget.value);
+const selectedNode = computed(() => stateStore.selectedNode.value);
 const controlReady = computed(
   () =>
-    snapshotStore.state.controlSessionEstablished &&
+    stateStore.state.controlSessionEstablished &&
     selectedTarget.value?.connection_state === "connected" &&
     Boolean(selectedTarget.value)
 );

@@ -3,7 +3,7 @@ import type {
   ControlCommandName,
   ControlCommandRequest,
   ControlCommandResult,
-  DashboardSnapshot,
+  DashboardState,
   EventRecord,
   LogRecord,
   RuntimeState,
@@ -146,7 +146,7 @@ function edge(
   };
 }
 
-export const paymentsSnapshot: DashboardSnapshot = {
+export const paymentsState: DashboardState = {
   target: {
     target_id: "payments-worker-a",
     display_name: "payments worker a",
@@ -237,10 +237,10 @@ export const paymentsSnapshot: DashboardSnapshot = {
   dropped_log_count: 1,
   config_version: "cfg-2026-05-06",
   generated_at: baseTime,
-  snapshot_generation: 42
+  state_generation: 42
 };
 
-export const billingSnapshot: DashboardSnapshot = {
+export const billingState: DashboardState = {
   target: {
     target_id: "billing-worker-b",
     display_name: "billing worker b",
@@ -271,10 +271,10 @@ export const billingSnapshot: DashboardSnapshot = {
   dropped_log_count: 0,
   config_version: "cfg-2026-05-06",
   generated_at: baseTime,
-  snapshot_generation: 8
+  state_generation: 8
 };
 
-export const searchSnapshot: DashboardSnapshot = {
+export const searchState: DashboardState = {
   target: {
     target_id: "search-worker-c",
     display_name: "search worker c",
@@ -305,19 +305,19 @@ export const searchSnapshot: DashboardSnapshot = {
     })
   ],
   recent_logs: [
-    log("search-worker-c", 701, "warning", "relay is waiting for a fresh snapshot before events resume", "search-reconnect")
+    log("search-worker-c", 701, "warning", "relay is waiting for a fresh state before events resume", "search-reconnect")
   ],
   dropped_event_count: 1,
   dropped_log_count: 0,
   config_version: "cfg-2026-05-06",
   generated_at: baseTime,
-  snapshot_generation: 11
+  state_generation: 11
 };
 
-export const mockSnapshots: DashboardSnapshot[] = [
-  paymentsSnapshot,
-  billingSnapshot,
-  searchSnapshot
+export const mockStates: DashboardState[] = [
+  paymentsState,
+  billingState,
+  searchState
 ];
 
 export function createInitialServerMessages(): ServerMessage[] {
@@ -331,10 +331,10 @@ export function createInitialServerMessages(): ServerMessage[] {
       },
       targets: mockTargets
     },
-    ...mockSnapshots.map((snapshot) => ({
-      type: "snapshot" as const,
-      target_id: snapshot.target.target_id,
-      snapshot
+    ...mockStates.map((state) => ({
+      type: "state" as const,
+      target_id: state.target.target_id,
+      state
     }))
   ];
 }

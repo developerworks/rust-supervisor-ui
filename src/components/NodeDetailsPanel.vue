@@ -4,11 +4,11 @@ import { FileText, ShieldAlert } from "lucide-vue-next";
 import Badge from "@/components/ui/Badge.vue";
 import Card from "@/components/ui/Card.vue";
 import { eventStore } from "@/state/eventStore";
-import { snapshotStore } from "@/state/snapshotStore";
+import { stateStore } from "@/state/stateStore";
 import type { LifecycleState } from "@/types/protocol";
 
-const detail = computed(() => snapshotStore.selectedNodeDetail.value);
-const selectedTargetId = computed(() => snapshotStore.state.selectedTargetId);
+const detail = computed(() => stateStore.selectedNodeDetail.value);
+const selectedTargetId = computed(() => stateStore.state.selectedTargetId);
 const relatedEvents = computed(() => {
   const node = detail.value?.node;
   if (!node || !selectedTargetId.value) {

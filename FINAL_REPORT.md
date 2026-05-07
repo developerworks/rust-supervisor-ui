@@ -9,7 +9,7 @@
 - T004 到 T007, 已创建 Vite(前端构建工具), Vue(网页界面框架), TypeScript(类型脚本语言), shadcn-vue(组件库) 思路, Tailwind(样式框架), Vue Flow(流程图组件), Vitest(前端测试工具) 和 Playwright(浏览器测试工具) 工程基线.
 - T026, 已在 `src/types/protocol.ts` 定义与 `contracts/wss-session.md` 对齐的 TypeScript(类型脚本语言) 消息类型.
 - T029, T043, T055 和 T066, 已创建首屏, 过滤器, 控制命令和前端基线浏览器测试.
-- T036 到 T040, 已实现 snapshot store(快照存储), target list(目标列表), topology canvas(拓扑画布), node detail(节点详情) 和 App(应用) 集成.
+- T036 到 T040, 已实现 state store(状态存储), target list(目标列表), topology canvas(拓扑画布), node detail(节点详情) 和 App(应用) 集成.
 - T049 到 T052, 已实现 event store(事件存储), event log(事件日志), filters(过滤器) 和流式更新集成.
 - T061 到 T063, 已实现 control panel(控制面板), confirm dialog(确认对话框) 和 session API(会话接口).
 - T070, 已创建 README(说明文档), 并补充 ASSUMPTIONS(假设说明).

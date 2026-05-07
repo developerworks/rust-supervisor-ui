@@ -5,14 +5,14 @@ import { Controls } from "@vue-flow/controls";
 import { VueFlow, type Edge, type Node, type NodeMouseEvent } from "@vue-flow/core";
 import { Network } from "lucide-vue-next";
 import Card from "@/components/ui/Card.vue";
-import { snapshotStore } from "@/state/snapshotStore";
+import { stateStore } from "@/state/stateStore";
 import type { LifecycleState, SupervisorNode } from "@/types/protocol";
 
-const snapshot = computed(() => snapshotStore.selectedSnapshot.value);
-const selectedNodePath = computed(() => snapshotStore.state.selectedNodePath);
+const state = computed(() => stateStore.selectedDashboardState.value);
+const selectedNodePath = computed(() => stateStore.state.selectedNodePath);
 
 const flowNodes = computed<Node[]>(() => {
-  const topology = snapshot.value?.topology;
+  const topology = state.value?.topology;
   if (!topology) {
     return [];
   }
@@ -30,7 +30,7 @@ const flowNodes = computed<Node[]>(() => {
 });
 
 const flowEdges = computed<Edge[]>(() => {
-  const topology = snapshot.value?.topology;
+  const topology = state.value?.topology;
   if (!topology) {
     return [];
   }
@@ -71,7 +71,7 @@ function stateClass(state: LifecycleState): string {
 }
 
 function selectFlowNode(event: NodeMouseEvent): void {
-  snapshotStore.selectNode(event.node.id);
+  stateStore.selectNode(event.node.id);
 }
 </script>
 
@@ -85,8 +85,8 @@ function selectFlowNode(event: NodeMouseEvent): void {
       <Network class="h-5 w-5 text-slate-500" aria-hidden="true" />
     </div>
 
-    <div v-if="!snapshot" class="flex h-[26rem] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-      等待 snapshot(快照).
+    <div v-if="!state" class="flex h-[26rem] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+      等待 state(状态).
     </div>
 
     <div v-else class="h-[26rem] overflow-hidden rounded-md border bg-slate-50" data-testid="topology-canvas">
@@ -103,14 +103,14 @@ function selectFlowNode(event: NodeMouseEvent): void {
       </VueFlow>
     </div>
 
-    <div v-if="snapshot" class="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+    <div v-if="state" class="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
       <button
-        v-for="node in snapshot.topology.nodes"
+        v-for="node in state.topology.nodes"
         :key="node.path"
         type="button"
         class="rounded-md border px-3 py-2 text-left text-xs transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         :class="node.path === selectedNodePath ? 'border-primary bg-blue-50' : 'border-border bg-card'"
-        @click="snapshotStore.selectNode(node.path)"
+        @click="stateStore.selectNode(node.path)"
       >
         <span class="block font-semibold text-slate-950">{{ node.name }}</span>
         <span class="block truncate text-muted-foreground">{{ node.path }}</span>

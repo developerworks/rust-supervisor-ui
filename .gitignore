@@ -7,3 +7,9 @@ playwright-report/
 .env
 .env.*
 .DS_Store
+build/
+.idea/
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
