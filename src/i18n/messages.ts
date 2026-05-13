@@ -56,18 +56,12 @@ export const messages = {
       targets: "目标",
       node: "节点",
       command: "命令",
-      filters: "筛选"
-    },
-    bottomTabs: {
-      events: "事件",
       runtime: "运行",
       diagnostics: "诊断"
     },
     sections: {
       inspector: "检查器",
       inspectorTitle: "上下文检查器",
-      bottomPanel: "运行详情",
-      bottomTitle: "运行状态和诊断",
       logWorkspace: "日志工作区",
       logWorkspaceTitle: "日志过滤和事件流",
       targetList: "目标列表",
@@ -82,6 +76,8 @@ export const messages = {
       eventTitle: "事件和日志流",
       nodeDetail: "节点详情",
       nodeTitle: "运行状态",
+      runtime: "运行",
+      runtimeTitle: "目标运行状态",
       diagnostics: "诊断",
       diagnosticsTitle: "会话诊断"
     },
@@ -315,18 +311,12 @@ export const messages = {
       targets: "Targets",
       node: "Node",
       command: "Command",
-      filters: "Filters"
-    },
-    bottomTabs: {
-      events: "Events",
       runtime: "Runtime",
       diagnostics: "Diagnostics"
     },
     sections: {
       inspector: "Inspector",
       inspectorTitle: "Context inspector",
-      bottomPanel: "Runtime detail",
-      bottomTitle: "Runtime state and diagnostics",
       logWorkspace: "Log workspace",
       logWorkspaceTitle: "Log filters and event stream",
       targetList: "Target list",
@@ -341,6 +331,8 @@ export const messages = {
       eventTitle: "Events and logs",
       nodeDetail: "Node detail",
       nodeTitle: "Runtime state",
+      runtime: "Runtime",
+      runtimeTitle: "Target runtime state",
       diagnostics: "Diagnostics",
       diagnosticsTitle: "Session diagnostics"
     },

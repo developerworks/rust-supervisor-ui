@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { ServerCog } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
-import { Box, List, ListItem, Section, Text } from "@/components/layout";
+import { Box, List, ListItem, PanelHeader, Section, Text } from "@/components/layout";
 import Badge from "@/components/ui/Badge.vue";
 import {
   Empty,
@@ -36,6 +36,14 @@ function stateVariant(state?: LifecycleState): "success" | "warning" | "danger" 
 
 <template>
   <Section aria-label="runtime state" data-testid="runtime-state-panel">
+    <PanelHeader
+      class="mb-3"
+      :eyebrow="t('sections.runtime')"
+      :title="t('sections.runtimeTitle')"
+    >
+      <ServerCog class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+    </PanelHeader>
+
     <Empty v-if="runtimeStates.length === 0" class="min-h-48 rounded-md border">
       <EmptyHeader>
         <EmptyMedia variant="icon">

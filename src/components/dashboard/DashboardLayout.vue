@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import TopologyCanvas from "@/components/TopologyCanvas.vue";
 import DashboardBlockingAlert from "@/components/dashboard/DashboardBlockingAlert.vue";
-import DashboardBottomPanel from "@/components/dashboard/DashboardBottomPanel.vue";
 import DashboardInspector from "@/components/dashboard/DashboardInspector.vue";
 import DashboardLogWorkspace from "@/components/dashboard/DashboardLogWorkspace.vue";
 import DashboardStatusStrip from "@/components/dashboard/DashboardStatusStrip.vue";
@@ -21,13 +19,9 @@ const emit = defineEmits<{
   command: [request: ControlCommandRequest];
 }>();
 
-const inspectorTab = ref("targets");
-const bottomTab = ref("runtime");
-
 function showDiagnostics(): void {
-  bottomTab.value = "diagnostics";
   requestAnimationFrame(() => {
-    document.getElementById("dashboard-bottom-panel")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    document.getElementById("dashboard-diagnostics-panel")?.scrollIntoView({ block: "start", behavior: "smooth" });
   });
 }
 </script>
@@ -42,31 +36,26 @@ function showDiagnostics(): void {
       />
 
       <Grid
-        class="min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem_24rem]"
+        class="min-w-0 items-start gap-4 xl:grid-cols-[24rem_minmax(0,1fr)]"
         data-testid="dashboard-standard-layout"
       >
-        <Section class="min-w-0" data-testid="dashboard-main-content">
-          <TopologyCanvas />
-        </Section>
-
-        <Section as="aside" class="min-w-0" data-testid="dashboard-right-rail">
+        <Section id="dashboard-context-panel" as="aside" class="min-w-0" data-testid="dashboard-left-rail">
           <DashboardInspector
-            v-model="inspectorTab"
             :command-pending="commandPending"
+            :last-command-result="lastCommandResult"
             @command="(request) => emit('command', request)"
           />
         </Section>
 
-        <Section id="dashboard-bottom-panel" class="min-w-0">
-          <DashboardBottomPanel
-            v-model="bottomTab"
-            :last-command-result="lastCommandResult"
-          />
-        </Section>
+        <Stack gap="lg" class="min-w-0" data-testid="dashboard-main-column">
+          <Section class="min-w-0" data-testid="dashboard-main-content">
+            <TopologyCanvas />
+          </Section>
 
-        <Section class="min-w-0 xl:col-span-3">
-          <DashboardLogWorkspace @filter-update="(message) => emit('filterUpdate', message)" />
-        </Section>
+          <Section class="min-w-0">
+            <DashboardLogWorkspace @filter-update="(message) => emit('filterUpdate', message)" />
+          </Section>
+        </Stack>
       </Grid>
     </Stack>
   </Box>

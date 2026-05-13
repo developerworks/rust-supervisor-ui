@@ -22,7 +22,7 @@ const protocolLabels = useProtocolLabels();
 </script>
 
 <template>
-  <Section aria-label="diagnostics">
+  <Section aria-label="diagnostics" data-testid="diagnostics-panel">
     <PanelHeader
       class="mb-3"
       :eyebrow="t('sections.diagnostics')"
