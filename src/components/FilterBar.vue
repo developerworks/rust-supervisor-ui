@@ -2,8 +2,8 @@
 import { computed, ref } from "vue";
 import { Eraser, ListFilter } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { FieldStack, FormRoot, InlineGroup, PanelHeader, Section, Text } from "@/components/layout";
 import Button from "@/components/ui/Button.vue";
-import Card from "@/components/ui/Card.vue";
 import Input from "@/components/ui/Input.vue";
 import Label from "@/components/ui/Label.vue";
 import {
@@ -164,21 +164,21 @@ function clearFilters(): void {
 </script>
 
 <template>
-  <Card aria-label="filters">
-    <div class="mb-3 flex items-center justify-between">
-      <div>
-        <p class="muted-label">{{ t("sections.filters") }}</p>
-        <h2 class="panel-title">{{ t("sections.filterTitle") }}</h2>
-      </div>
+  <Section aria-label="filters">
+    <PanelHeader
+      class="mb-3"
+      :eyebrow="t('sections.filters')"
+      :title="t('sections.filterTitle')"
+    >
       <ListFilter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-    </div>
+    </PanelHeader>
 
-    <form class="grid gap-3" data-testid="filter-form" @submit.prevent="applyFilters">
-      <div class="flex min-w-0 flex-col gap-1.5">
+    <FormRoot class="grid gap-3" data-testid="filter-form" @submit="applyFilters">
+      <FieldStack>
         <Label for="target-filter">{{ t("filters.targetIdentity") }}</Label>
         <Select v-model="targetSelectValue">
           <SelectTrigger id="target-filter" aria-label="target filter">
-            <span class="truncate">{{ targetSelectLabel }}</span>
+            <Text as="span" class="truncate">{{ targetSelectLabel }}</Text>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -188,12 +188,12 @@ function clearFilters(): void {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </div>
-      <div class="flex min-w-0 flex-col gap-1.5">
+      </FieldStack>
+      <FieldStack>
         <Label for="child-filter">{{ t("filters.childTask") }}</Label>
         <Select v-model="childPathSelectValue">
           <SelectTrigger id="child-filter" aria-label="child filter">
-            <span class="truncate">{{ childPathSelectLabel }}</span>
+            <Text as="span" class="truncate">{{ childPathSelectLabel }}</Text>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -203,12 +203,12 @@ function clearFilters(): void {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </div>
-      <div class="flex min-w-0 flex-col gap-1.5">
+      </FieldStack>
+      <FieldStack>
         <Label for="state-filter">{{ t("filters.lifecycleState") }}</Label>
         <Select v-model="lifecycleSelectValue">
           <SelectTrigger id="state-filter" aria-label="lifecycle filter">
-            <span class="truncate">{{ lifecycleSelectLabel }}</span>
+            <Text as="span" class="truncate">{{ lifecycleSelectLabel }}</Text>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -218,12 +218,12 @@ function clearFilters(): void {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </div>
-      <div class="flex min-w-0 flex-col gap-1.5">
+      </FieldStack>
+      <FieldStack>
         <Label for="event-filter">{{ t("filters.eventType") }}</Label>
         <Select v-model="eventTypeSelectValue">
           <SelectTrigger id="event-filter" aria-label="event type filter">
-            <span class="truncate">{{ eventTypeSelectLabel }}</span>
+            <Text as="span" class="truncate">{{ eventTypeSelectLabel }}</Text>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -233,12 +233,12 @@ function clearFilters(): void {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </div>
-      <div class="flex min-w-0 flex-col gap-1.5">
+      </FieldStack>
+      <FieldStack>
         <Label for="severity-filter">{{ t("filters.severity") }}</Label>
         <Select v-model="severitySelectValue">
           <SelectTrigger id="severity-filter" aria-label="severity filter">
-            <span class="truncate">{{ severitySelectLabel }}</span>
+            <Text as="span" class="truncate">{{ severitySelectLabel }}</Text>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -248,16 +248,16 @@ function clearFilters(): void {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </div>
-      <div class="flex min-w-0 flex-col gap-1.5">
+      </FieldStack>
+      <FieldStack>
         <Label for="sequence-filter">{{ t("filters.sequenceMinimum") }}</Label>
         <Input id="sequence-filter" v-model="sequenceMin" type="number" aria-label="sequence filter" placeholder="1000" />
-      </div>
-      <div class="flex min-w-0 flex-col gap-1.5">
+      </FieldStack>
+      <FieldStack>
         <Label for="correlation-filter">{{ t("filters.correlationId") }}</Label>
         <Input id="correlation-filter" v-model="correlationId" aria-label="correlation filter" placeholder="restart-7" />
-      </div>
-      <div class="flex min-w-0 items-end gap-2">
+      </FieldStack>
+      <InlineGroup class="items-end gap-2">
         <Button type="submit" class="flex-1">
           <ListFilter class="h-4 w-4" aria-hidden="true" />
           {{ t("common.apply") }}
@@ -266,7 +266,7 @@ function clearFilters(): void {
           <Eraser class="h-4 w-4" aria-hidden="true" />
           {{ t("common.clear") }}
         </Button>
-      </div>
-    </form>
-  </Card>
+      </InlineGroup>
+    </FormRoot>
+  </Section>
 </template>

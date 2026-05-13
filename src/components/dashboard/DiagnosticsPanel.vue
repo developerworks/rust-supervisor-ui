@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { AlertCircle } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
-import Card from "@/components/ui/Card.vue";
+import { List, ListItem, PanelHeader, Section, Text } from "@/components/layout";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle
+} from "@/components/ui/empty";
 import { useProtocolLabels } from "@/i18n/protocolLabels";
 import { stateStore } from "@/state/stateStore";
 import type { ControlCommandResult } from "@/types/protocol";
@@ -15,31 +22,37 @@ const protocolLabels = useProtocolLabels();
 </script>
 
 <template>
-  <Card aria-label="diagnostics">
-    <div class="mb-3 flex items-center justify-between">
-      <div>
-        <p class="muted-label">{{ t("sections.diagnostics") }}</p>
-        <h2 class="panel-title">{{ t("sections.diagnosticsTitle") }}</h2>
-      </div>
+  <Section aria-label="diagnostics">
+    <PanelHeader
+      class="mb-3"
+      :eyebrow="t('sections.diagnostics')"
+      :title="t('sections.diagnosticsTitle')"
+    >
       <AlertCircle class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-    </div>
+    </PanelHeader>
 
-    <p v-if="props.lastCommandResult" class="mb-3 rounded-md border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+    <Text v-if="props.lastCommandResult" class="mb-3 rounded-md border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
       {{ t("diagnostics.commandResult", { result: `${props.lastCommandResult.command_id} ${protocolLabels.commandStatus(props.lastCommandResult.status)}` }) }}
-    </p>
+    </Text>
 
-    <div v-if="stateStore.state.diagnostics.length === 0" class="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-      {{ t("diagnostics.empty") }}
-    </div>
-    <ul v-else class="flex flex-col gap-2" data-testid="diagnostics">
-      <li
+    <Empty v-if="stateStore.state.diagnostics.length === 0" class="min-h-48 rounded-md border">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <AlertCircle aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>{{ t("diagnostics.emptyTitle") }}</EmptyTitle>
+        <EmptyDescription>{{ t("diagnostics.emptyDescription") }}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+    <List v-else class="flex flex-col gap-2" data-testid="diagnostics">
+      <ListItem
         v-for="error in stateStore.state.diagnostics"
         :key="`${error.code}:${error.message}`"
         class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
       >
-        <p class="font-semibold">{{ error.code }}</p>
-        <p class="mt-1 leading-5">{{ error.message }}</p>
-      </li>
-    </ul>
-  </Card>
+        <Text class="font-semibold">{{ error.code }}</Text>
+        <Text class="mt-1 leading-5">{{ error.message }}</Text>
+      </ListItem>
+    </List>
+  </Section>
 </template>

@@ -1,11 +1,26 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { ListFilter, ScrollText } from "lucide-vue-next";
+import { Eraser, ListFilter, ScrollText } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { Box, InlineGroup, List, ListItem, PanelHeader, Section, Text } from "@/components/layout";
 import Badge from "@/components/ui/Badge.vue";
-import Card from "@/components/ui/Card.vue";
+import Button from "@/components/ui/Button.vue";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle
+} from "@/components/ui/empty";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useProtocolLabels } from "@/i18n/protocolLabels";
 import { eventStore, type TimelineRecord } from "@/state/eventStore";
+import type { LogEventFilterConditionsMessage } from "@/types/protocol";
+
+const emit = defineEmits<{
+  filterUpdate: [message: LogEventFilterConditionsMessage];
+}>();
 
 const { t } = useI18n();
 const protocolLabels = useProtocolLabels();
@@ -51,53 +66,68 @@ function badgeVariant(severity: string): "danger" | "warning" | "success" | "mut
   }
   return "muted";
 }
+
+function clearFilters(): void {
+  emit("filterUpdate", eventStore.clearFilters());
+}
 </script>
 
 <template>
-  <Card aria-label="event log">
-    <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <p class="muted-label">{{ t("sections.eventLog") }}</p>
-        <h2 class="panel-title">{{ t("sections.eventTitle") }}</h2>
-      </div>
-      <div class="flex flex-wrap gap-2">
+  <Section aria-label="event log">
+    <PanelHeader
+      class="mb-3"
+      :eyebrow="t('sections.eventLog')"
+      :title="t('sections.eventTitle')"
+    >
+      <InlineGroup wrap gap="sm">
         <Badge variant="warning">{{ t("eventLog.droppedEvents", { count: droppedEvents }) }}</Badge>
         <Badge variant="muted">{{ t("eventLog.droppedLogs", { count: droppedLogs }) }}</Badge>
-      </div>
-    </div>
+      </InlineGroup>
+    </PanelHeader>
 
-    <div v-if="eventStore.state.sequenceDiagnostics.length > 0" class="mb-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-      <p v-for="diagnostic in eventStore.state.sequenceDiagnostics" :key="diagnostic">
+    <Box v-if="eventStore.state.sequenceDiagnostics.length > 0" class="mb-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+      <Text v-for="diagnostic in eventStore.state.sequenceDiagnostics" :key="diagnostic">
         {{ diagnostic }}
-      </p>
-    </div>
+      </Text>
+    </Box>
 
-    <div class="max-h-[28rem] overflow-auto rounded-md border" data-testid="event-log">
-      <div v-if="records.length === 0" class="flex min-h-28 items-center justify-center gap-2 text-sm text-muted-foreground">
-        <ListFilter class="h-4 w-4" aria-hidden="true" />
-        {{ t("eventLog.empty") }}
-      </div>
+    <ScrollArea class="max-h-[28rem] rounded-md border" data-testid="event-log">
+      <Empty v-if="records.length === 0" class="min-h-48 rounded-md border-0">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <ListFilter aria-hidden="true" />
+          </EmptyMedia>
+          <EmptyTitle>{{ t("eventLog.emptyTitle") }}</EmptyTitle>
+          <EmptyDescription>{{ t("eventLog.emptyDescription") }}</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button type="button" variant="outline" size="sm" @click="clearFilters">
+            <Eraser aria-hidden="true" />
+            {{ t("eventLog.clearFilters") }}
+          </Button>
+        </EmptyContent>
+      </Empty>
 
-      <ul v-else class="divide-y">
-        <li
+      <List v-else class="divide-y">
+        <ListItem
           v-for="record in records"
           :key="record.key"
           class="grid gap-2 p-3 text-sm sm:grid-cols-[7rem_1fr_auto]"
           data-testid="timeline-record"
         >
-          <div class="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-            <ScrollText class="h-4 w-4" aria-hidden="true" />
-            <span>#{{ record.sequence }}</span>
-          </div>
-          <div class="min-w-0">
-            <p class="truncate font-semibold text-foreground">{{ title(record) }}</p>
-            <p class="truncate text-xs text-muted-foreground">{{ record.target_id }}, {{ detail(record) }}</p>
-          </div>
+          <InlineGroup gap="sm" class="text-xs font-semibold text-muted-foreground">
+            <ScrollText aria-hidden="true" />
+            <Text as="span">#{{ record.sequence }}</Text>
+          </InlineGroup>
+          <Box class="min-w-0">
+            <Text class="truncate font-semibold text-foreground">{{ title(record) }}</Text>
+            <Text class="truncate text-xs text-muted-foreground">{{ record.target_id }}, {{ detail(record) }}</Text>
+          </Box>
           <Badge :variant="badgeVariant(record.severity)" class="justify-self-start sm:justify-self-end">
             {{ protocolLabels.severity(record.severity) }}
           </Badge>
-        </li>
-      </ul>
-    </div>
-  </Card>
+        </ListItem>
+      </List>
+    </ScrollArea>
+  </Section>
 </template>

@@ -4,7 +4,6 @@ import {
   initializePreferences,
   preferenceState,
   resolveThemeMode,
-  setLayoutMode,
   setLocale,
   setThemeMode
 } from "@/state/preferenceStore";
@@ -24,7 +23,6 @@ describe("preferenceStore", () => {
   it("uses Chinese and system theme by default", () => {
     expect(preferenceState.locale).toBe("zh-CN");
     expect(preferenceState.themeMode).toBe("system");
-    expect(preferenceState.layoutMode).toBe("standard");
     expect(preferenceState.resolvedTheme).toBe("light");
   });
 
@@ -52,14 +50,7 @@ describe("preferenceStore", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
 
-  it("persists layout mode changes", () => {
-    setLayoutMode("sidebar-07");
-
-    expect(preferenceState.layoutMode).toBe("sidebar-07");
-    expect(localStorage.getItem("rust-supervisor-ui:layout-mode")).toBe("sidebar-07");
-  });
-
-  it("migrates unsupported layout preference to standard layout", () => {
+  it("ignores stale layout preferences", () => {
     localStorage.setItem("rust-supervisor-ui:layout-mode", "legacy-panel-layout");
 
     initializePreferences({
@@ -69,6 +60,7 @@ describe("preferenceStore", () => {
       systemPrefersDark: false
     });
 
-    expect(preferenceState.layoutMode).toBe("standard");
+    expect("layoutMode" in preferenceState).toBe(false);
+    expect(preferenceState.locale).toBe("zh-CN");
   });
 });

@@ -4,6 +4,7 @@ test("validates reason, confirmation and command result", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("button", { name: /duplicate guard/ }).first().click();
+  await page.getByRole("tab", { name: "命令" }).click();
   await expect(page.getByTestId("command-target-path")).toContainText("/root/duplicate_guard");
   await expect(page.getByTestId("command-target-path")).toHaveCSS("white-space", "nowrap");
   await page.getByRole("button", { name: /提交命令/ }).click();
@@ -21,6 +22,7 @@ test("validates reason, confirmation and command result", async ({ page }) => {
   await expect(page.getByRole("button", { name: /确认提交/ })).toBeEnabled();
   await page.getByRole("button", { name: /确认提交/ }).click();
 
+  await page.getByRole("tab", { name: "诊断" }).click();
   await expect(page.getByText(/命令结果:/)).toBeVisible();
   await expect(page.getByTestId("event-log")).toContainText("命令审计: 移除子任务");
 });

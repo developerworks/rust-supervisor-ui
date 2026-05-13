@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Languages, LayoutPanelLeft, Moon, RefreshCw } from "lucide-vue-next";
+import { Languages, Moon, RefreshCw } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import {
   Menubar,
@@ -13,10 +13,8 @@ import {
 } from "@/components/ui/menubar";
 import {
   preferenceState,
-  setLayoutMode,
   setLocale,
   setThemeMode,
-  type LayoutMode,
   type LocaleCode,
   type ThemeMode
 } from "@/state/preferenceStore";
@@ -41,12 +39,6 @@ function updateLocale(value: unknown): void {
 function updateTheme(value: unknown): void {
   if (value === "system" || value === "time" || value === "light" || value === "dark") {
     setThemeMode(value as ThemeMode);
-  }
-}
-
-function updateLayout(value: unknown): void {
-  if (value === "standard" || value === "sidebar-07") {
-    setLayoutMode(value as LayoutMode);
   }
 }
 </script>
@@ -79,20 +71,6 @@ function updateLayout(value: unknown): void {
           <MenubarRadioItem value="time">{{ t("theme.time") }}</MenubarRadioItem>
           <MenubarRadioItem value="light">{{ t("theme.light") }}</MenubarRadioItem>
           <MenubarRadioItem value="dark">{{ t("theme.dark") }}</MenubarRadioItem>
-        </MenubarRadioGroup>
-      </MenubarContent>
-    </MenubarMenu>
-
-    <MenubarMenu>
-      <MenubarTrigger>
-        <LayoutPanelLeft class="mr-2 h-4 w-4" aria-hidden="true" />
-        {{ t("menu.layout") }}
-      </MenubarTrigger>
-      <MenubarContent>
-        <MenubarLabel>{{ t("menu.layout") }}</MenubarLabel>
-        <MenubarRadioGroup :model-value="preferenceState.layoutMode" @update:model-value="updateLayout">
-          <MenubarRadioItem value="standard">{{ t("layout.standard") }}</MenubarRadioItem>
-          <MenubarRadioItem value="sidebar-07">{{ t("layout.sidebar07") }}</MenubarRadioItem>
         </MenubarRadioGroup>
       </MenubarContent>
     </MenubarMenu>

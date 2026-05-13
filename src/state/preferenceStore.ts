@@ -3,7 +3,6 @@ import { computed, reactive } from "vue";
 export type LocaleCode = "zh-CN" | "en-US";
 export type ThemeMode = "system" | "time" | "light" | "dark";
 export type ResolvedTheme = "light" | "dark";
-export type LayoutMode = "standard" | "sidebar-07";
 
 export interface PreferenceEnvironment {
   storage?: Storage;
@@ -16,16 +15,13 @@ export interface PreferenceEnvironment {
 interface PreferenceState {
   locale: LocaleCode;
   themeMode: ThemeMode;
-  layoutMode: LayoutMode;
   resolvedTheme: ResolvedTheme;
 }
 
 const localeStorageKey = "rust-supervisor-ui:locale";
 const themeModeStorageKey = "rust-supervisor-ui:theme-mode";
-const layoutModeStorageKey = "rust-supervisor-ui:layout-mode";
 const supportedLocales: LocaleCode[] = ["zh-CN", "en-US"];
 const supportedThemeModes: ThemeMode[] = ["system", "time", "light", "dark"];
-const supportedLayoutModes: LayoutMode[] = ["standard", "sidebar-07"];
 
 let activeEnvironment: PreferenceEnvironment = {};
 let mediaCleanup: (() => void) | undefined;
@@ -34,7 +30,6 @@ let timeTimer: number | undefined;
 export const preferenceState = reactive<PreferenceState>({
   locale: "zh-CN",
   themeMode: "system",
-  layoutMode: "standard",
   resolvedTheme: "light"
 });
 
@@ -45,7 +40,6 @@ export function initializePreferences(environment: PreferenceEnvironment = brows
   activeEnvironment = environment;
   preferenceState.locale = readLocale(environment.storage);
   preferenceState.themeMode = readThemeMode(environment.storage);
-  preferenceState.layoutMode = readLayoutMode(environment.storage);
   applyTheme();
   bindThemeSources();
 }
@@ -60,11 +54,6 @@ export function setThemeMode(mode: ThemeMode): void {
   activeEnvironment.storage?.setItem(themeModeStorageKey, mode);
   applyTheme();
   bindThemeSources();
-}
-
-export function setLayoutMode(mode: LayoutMode): void {
-  preferenceState.layoutMode = mode;
-  activeEnvironment.storage?.setItem(layoutModeStorageKey, mode);
 }
 
 export function resolveThemeMode(mode: ThemeMode, environment: PreferenceEnvironment = activeEnvironment): ResolvedTheme {
@@ -114,11 +103,6 @@ function readLocale(storage?: Storage): LocaleCode {
 function readThemeMode(storage?: Storage): ThemeMode {
   const stored = storage?.getItem(themeModeStorageKey);
   return supportedThemeModes.includes(stored as ThemeMode) ? (stored as ThemeMode) : "system";
-}
-
-function readLayoutMode(storage?: Storage): LayoutMode {
-  const stored = storage?.getItem(layoutModeStorageKey);
-  return supportedLayoutModes.includes(stored as LayoutMode) ? (stored as LayoutMode) : "standard";
 }
 
 function systemPrefersDark(environment: PreferenceEnvironment): boolean {

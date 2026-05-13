@@ -4,6 +4,7 @@ test("switches language through menubar and persists the locale", async ({ page 
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "目标进程" })).toBeVisible();
+  await page.getByRole("tab", { name: "命令" }).click();
   await expect(page.getByRole("combobox", { name: "command select" })).toContainText("暂停子任务");
   await expect(page.getByRole("combobox", { name: "event type filter" })).toContainText("全部事件类型");
   await expect(page.getByText("command(命令)")).toHaveCount(0);
@@ -12,7 +13,9 @@ test("switches language through menubar and persists the locale", async ({ page 
   await page.getByRole("menuitem", { name: /语言/ }).click();
   await page.getByRole("menuitemradio", { name: "英文" }).click();
 
+  await page.getByRole("tab", { name: "Targets" }).click();
   await expect(page.getByRole("heading", { name: "Targets" })).toBeVisible();
+  await page.getByRole("tab", { name: "Command" }).click();
   await expect(page.getByRole("button", { name: /Submit command/ })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "command select" })).toContainText("Pause child");
   await expect(page.getByRole("combobox", { name: "event type filter" })).toContainText("All event types");
@@ -38,23 +41,13 @@ test("switches dark and light themes through menubar and persists manual theme",
   await expect(page.locator("html")).not.toHaveClass(/dark/);
 });
 
-test("switches dashboard layout through menubar", async ({ page }) => {
+test("renders the single dashboard layout without layout switching", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByTestId("dashboard-standard-layout")).toBeVisible();
-  await expect(page.getByTestId("dashboard-standard-layout").locator(":scope > div").first()).toHaveCSS("border-top-left-radius", "0px");
-  await expect(page.getByTestId("dashboard-standard-layout").locator(":scope > div").first()).toHaveCSS("border-top-width", "0px");
-
-  await page.getByRole("menuitem", { name: /布局/ }).click();
-  await page.getByRole("menuitemradio", { name: "侧边栏 07" }).click();
-
-  await expect(page.getByTestId("dashboard-sidebar-layout")).toBeVisible();
-  await expect(page.getByTestId("dashboard-sidebar-layout")).toHaveCSS("border-top-left-radius", "0px");
-  await expect(page.getByTestId("dashboard-sidebar-layout")).toHaveCSS("border-top-width", "0px");
-  await page.reload();
-  await expect(page.getByTestId("dashboard-sidebar-layout")).toBeVisible();
-
-  await page.getByRole("menuitem", { name: /布局/ }).click();
-  await page.getByRole("menuitemradio", { name: "标准布局" }).click();
+  await expect(page.getByTestId("dashboard-inspector")).toBeVisible();
+  await expect(page.getByTestId("dashboard-bottom-panel")).toBeVisible();
+  await expect(page.getByTestId("dashboard-sidebar-layout")).toHaveCount(0);
+  await expect(page.getByRole("menuitem", { name: /布局/ })).toHaveCount(0);
   await expect(page.getByTestId("dashboard-standard-layout")).toBeVisible();
 });

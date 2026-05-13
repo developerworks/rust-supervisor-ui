@@ -2,6 +2,7 @@ import { createApp, watch } from "vue";
 import App from "./App.vue";
 import { i18n, syncI18nLocale } from "@/i18n";
 import { initializePreferences, preferenceState } from "@/state/preferenceStore";
+import "vue-sonner/style.css";
 import "./assets/main.css";
 
 declare global {

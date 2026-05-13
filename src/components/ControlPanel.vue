@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Play, ShieldCheck } from "lucide-vue-next";
+import { MousePointerClick, Play, ShieldCheck, ShieldOff } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { Box, FieldStack, FormRoot, Grid, PanelHeader, Section, Text } from "@/components/layout";
 import Button from "@/components/ui/Button.vue";
-import Card from "@/components/ui/Card.vue";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle
+} from "@/components/ui/empty";
 import Label from "@/components/ui/Label.vue";
 import {
   Select,
@@ -40,12 +47,13 @@ const confirmOpen = ref(false);
 
 const selectedTarget = computed(() => stateStore.selectedTarget.value);
 const selectedNode = computed(() => stateStore.selectedNode.value);
-const controlReady = computed(
+const targetReady = computed(
   () =>
     stateStore.state.controlSessionEstablished &&
     selectedTarget.value?.connection_state === "connected" &&
     Boolean(selectedTarget.value)
 );
+const controlReady = computed(() => targetReady.value && Boolean(selectedNode.value));
 
 const commandOptions = computed(() => [
   { value: "restart_child", label: t("control.commands.restart_child") },
@@ -96,22 +104,42 @@ function buildRequest(confirmed: boolean, nextReason: string): ControlCommandReq
 </script>
 
 <template>
-  <Card aria-label="control panel">
-    <div class="mb-3 flex items-center justify-between">
-      <div>
-        <p class="muted-label">{{ t("sections.controlPanel") }}</p>
-        <h2 class="panel-title">{{ t("sections.controlTitle") }}</h2>
-      </div>
+  <Section aria-label="control panel">
+    <PanelHeader
+      class="mb-3"
+      :eyebrow="t('sections.controlPanel')"
+      :title="t('sections.controlTitle')"
+    >
       <ShieldCheck class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-    </div>
+    </PanelHeader>
 
-    <form class="flex flex-col gap-3" @submit.prevent="submit">
-      <div class="grid gap-3">
-        <div class="flex min-w-0 flex-col gap-1.5">
+    <Empty v-if="!targetReady" class="min-h-48 rounded-md border">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <ShieldOff aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>{{ t("control.unavailableTitle") }}</EmptyTitle>
+        <EmptyDescription>{{ t("control.unavailableDescription") }}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+
+    <Empty v-else-if="!selectedNode" class="min-h-48 rounded-md border">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <MousePointerClick aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>{{ t("control.chooseNodeTitle") }}</EmptyTitle>
+        <EmptyDescription>{{ t("control.chooseNodeDescription") }}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+
+    <FormRoot v-else class="flex flex-col gap-3" @submit="submit">
+      <Grid class="gap-3">
+        <FieldStack>
           <Label for="command-select">{{ t("control.command") }}</Label>
-          <Select v-model="command" :disabled="!controlReady || props.pending">
+          <Select v-model="command" :disabled="props.pending">
             <SelectTrigger id="command-select" aria-label="command select">
-              <span class="truncate">{{ selectedCommandLabel }}</span>
+              <Text as="span" class="truncate">{{ selectedCommandLabel }}</Text>
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -121,36 +149,33 @@ function buildRequest(confirmed: boolean, nextReason: string): ControlCommandReq
               </SelectGroup>
             </SelectContent>
           </Select>
-        </div>
-        <div class="flex min-w-0 flex-col gap-1.5">
+        </FieldStack>
+        <FieldStack>
           <Label>{{ t("control.target") }}</Label>
-          <div
+          <Box
             class="flex h-9 min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-md border bg-muted px-3 text-sm text-foreground"
             data-testid="command-target-path"
           >
             {{ selectedNode?.path ?? t("control.noNode") }}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </FieldStack>
+      </Grid>
 
-      <div class="flex flex-col gap-1.5">
+      <FieldStack>
         <Label for="command-reason">{{ t("control.reason") }}</Label>
         <Textarea id="command-reason" v-model="reason" aria-label="command reason" :placeholder="t('control.reasonPlaceholder')" />
-      </div>
+      </FieldStack>
 
-      <p v-if="!controlReady" class="rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-        {{ t("control.notReady") }}
-      </p>
-      <p v-if="localError" class="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+      <Text v-if="localError" class="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
         {{ localError }}
-      </p>
+      </Text>
 
       <Button type="submit" class="w-full" :disabled="!controlReady || props.pending">
         <Spinner v-if="props.pending" aria-hidden="true" />
-        <Play v-else class="h-4 w-4" aria-hidden="true" />
+        <Play v-else aria-hidden="true" />
         {{ props.pending ? t("control.submitting") : t("control.submit") }}
       </Button>
-    </form>
+    </FormRoot>
 
     <ConfirmCommandDialog
       :open="confirmOpen"
@@ -160,5 +185,5 @@ function buildRequest(confirmed: boolean, nextReason: string): ControlCommandReq
       @close="confirmOpen = false"
       @confirm="confirmDangerous"
     />
-  </Card>
+  </Section>
 </template>

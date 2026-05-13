@@ -16,7 +16,6 @@ export const messages = {
       settings: "设置",
       language: "语言",
       theme: "主题",
-      layout: "布局",
       actions: "操作",
       reconnect: "重新连接"
     },
@@ -30,18 +29,47 @@ export const messages = {
       light: "亮色",
       dark: "暗色"
     },
-    layout: {
-      standard: "标准布局",
-      sidebar07: "侧边栏 07",
-      tools: "工具"
-    },
     common: {
       apply: "应用",
       clear: "清除",
       cancel: "取消",
       confirmSubmit: "确认提交"
     },
+    blockingAlert: {
+      invalidRelayTitle: "中继服务未配置",
+      invalidRelayDescription: "VITE_SUPERVISOR_RELAY_URL 必须使用 wss:// 地址. 当前无法加载目标和监督树状态.",
+      copyEnvironment: "复制环境变量名",
+      showDiagnostics: "查看诊断",
+      copied: "环境变量名已复制",
+      copyFailed: "环境变量名复制失败"
+    },
+    statusStrip: {
+      relay: "中继状态",
+      identity: "身份状态",
+      targets: "目标数量",
+      events: "事件数量",
+      failedNodes: "异常节点 {count}",
+      targetCount: "目标 {count}",
+      eventCount: "事件 {count}"
+    },
+    inspectorTabs: {
+      targets: "目标",
+      node: "节点",
+      command: "命令",
+      filters: "筛选"
+    },
+    bottomTabs: {
+      events: "事件",
+      runtime: "运行",
+      diagnostics: "诊断"
+    },
     sections: {
+      inspector: "检查器",
+      inspectorTitle: "上下文检查器",
+      bottomPanel: "运行详情",
+      bottomTitle: "运行状态和诊断",
+      logWorkspace: "日志工作区",
+      logWorkspaceTitle: "日志过滤和事件流",
       targetList: "目标列表",
       targetTitle: "目标进程",
       controlPanel: "控制面板",
@@ -59,6 +87,8 @@ export const messages = {
     },
     targetList: {
       waiting: "等待目标列表消息.",
+      emptyTitle: "暂无目标",
+      emptyDescription: "当 Rust 任务节点连接后, 这里会显示目标身份和生命周期.",
       commands: "命令: {commands}",
       status: {
         registered: "已注册",
@@ -142,6 +172,10 @@ export const messages = {
       reasonPlaceholder: "说明本次控制命令原因",
       reasonRequired: "原因必填.",
       notReady: "需要已连接目标和已建立控制会话.",
+      unavailableTitle: "命令暂不可用",
+      unavailableDescription: "需要已连接的目标和已建立的控制会话.",
+      chooseNodeTitle: "请选择一个可操作节点",
+      chooseNodeDescription: "选择监督者或工作者后可以执行命令.",
       submit: "提交命令",
       submitting: "正在提交",
       commands: {
@@ -163,12 +197,27 @@ export const messages = {
     },
     topology: {
       waitingState: "等待状态.",
-      dependencyLabel: "依赖"
+      dependencyLabel: "依赖",
+      emptyTitle: "暂无监督树状态",
+      emptyDescription: "中继服务未连接, 或目标进程尚未上报状态.",
+      searchPlaceholder: "搜索节点名称或路径",
+      fitView: "适应视图",
+      relayout: "重新布局",
+      showFailedOnly: "只看异常",
+      showAll: "显示全部",
+      legend: "图例",
+      legendSupervisor: "监督者",
+      legendWorker: "工作者",
+      noMatchTitle: "没有匹配节点",
+      noMatchDescription: "可以调整搜索条件, 或关闭只看异常."
     },
     eventLog: {
       droppedEvents: "丢弃事件 {count}",
       droppedLogs: "丢弃日志 {count}",
       empty: "当前过滤条件没有匹配记录.",
+      emptyTitle: "当前没有匹配事件",
+      emptyDescription: "可以清空筛选条件, 或等待目标上报新事件.",
+      clearFilters: "清空筛选",
       logTitle: "日志记录",
       auditTitle: "命令审计: {command}",
       eventDetail: "路径: {path}, 关联标识: {correlationId}",
@@ -176,6 +225,8 @@ export const messages = {
     },
     nodeDetail: {
       chooseNode: "请选择监督节点.",
+      emptyTitle: "请选择一个节点",
+      emptyDescription: "选中拓扑中的监督者或工作者后, 这里会显示运行状态和最近事件.",
       health: "健康状态",
       readiness: "就绪状态",
       restartCount: "重启次数",
@@ -189,7 +240,15 @@ export const messages = {
     },
     diagnostics: {
       commandResult: "命令结果: {result}",
-      empty: "当前没有结构化错误."
+      empty: "当前没有结构化错误.",
+      emptyTitle: "当前没有诊断信息",
+      emptyDescription: "连接错误, 命令校验错误和目标异常会显示在这里."
+    },
+    runtime: {
+      emptyTitle: "暂无运行状态",
+      emptyDescription: "目标上报监督树状态后, 这里会显示子任务生命周期和重启次数.",
+      generationAndAttempt: "代次 {generation}, 尝试 {attempt}",
+      restartCount: "重启 {count}"
     },
     toast: {
       connecting: "正在重新连接",
@@ -216,7 +275,6 @@ export const messages = {
       settings: "Settings",
       language: "Language",
       theme: "Theme",
-      layout: "Layout",
       actions: "Actions",
       reconnect: "Reconnect"
     },
@@ -230,18 +288,47 @@ export const messages = {
       light: "Light",
       dark: "Dark"
     },
-    layout: {
-      standard: "Standard",
-      sidebar07: "Sidebar 07",
-      tools: "Tools"
-    },
     common: {
       apply: "Apply",
       clear: "Clear",
       cancel: "Cancel",
       confirmSubmit: "Confirm submit"
     },
+    blockingAlert: {
+      invalidRelayTitle: "Relay is not configured",
+      invalidRelayDescription: "VITE_SUPERVISOR_RELAY_URL must use a wss:// URL. Targets and supervisor tree state cannot load right now.",
+      copyEnvironment: "Copy variable name",
+      showDiagnostics: "View diagnostics",
+      copied: "Environment variable name copied",
+      copyFailed: "Environment variable name copy failed"
+    },
+    statusStrip: {
+      relay: "Relay status",
+      identity: "Identity status",
+      targets: "Target count",
+      events: "Event count",
+      failedNodes: "Failed nodes {count}",
+      targetCount: "Targets {count}",
+      eventCount: "Events {count}"
+    },
+    inspectorTabs: {
+      targets: "Targets",
+      node: "Node",
+      command: "Command",
+      filters: "Filters"
+    },
+    bottomTabs: {
+      events: "Events",
+      runtime: "Runtime",
+      diagnostics: "Diagnostics"
+    },
     sections: {
+      inspector: "Inspector",
+      inspectorTitle: "Context inspector",
+      bottomPanel: "Runtime detail",
+      bottomTitle: "Runtime state and diagnostics",
+      logWorkspace: "Log workspace",
+      logWorkspaceTitle: "Log filters and event stream",
       targetList: "Target list",
       targetTitle: "Targets",
       controlPanel: "Control panel",
@@ -259,6 +346,8 @@ export const messages = {
     },
     targetList: {
       waiting: "Waiting for targets.",
+      emptyTitle: "No targets",
+      emptyDescription: "Connected Rust task nodes will appear here with identity and lifecycle details.",
       commands: "Commands: {commands}",
       status: {
         registered: "Registered",
@@ -342,6 +431,10 @@ export const messages = {
       reasonPlaceholder: "Explain the reason for this control command",
       reasonRequired: "Reason is required.",
       notReady: "A connected target and established control session are required.",
+      unavailableTitle: "Commands are unavailable",
+      unavailableDescription: "A connected target and established control session are required.",
+      chooseNodeTitle: "Select an actionable node",
+      chooseNodeDescription: "Select a supervisor or worker before executing a command.",
       submit: "Submit command",
       submitting: "Submitting",
       commands: {
@@ -363,12 +456,27 @@ export const messages = {
     },
     topology: {
       waitingState: "Waiting for state.",
-      dependencyLabel: "depends"
+      dependencyLabel: "depends",
+      emptyTitle: "No supervisor tree state",
+      emptyDescription: "The relay is disconnected, or the target process has not reported state yet.",
+      searchPlaceholder: "Search node name or path",
+      fitView: "Fit view",
+      relayout: "Relayout",
+      showFailedOnly: "Failed only",
+      showAll: "Show all",
+      legend: "Legend",
+      legendSupervisor: "Supervisor",
+      legendWorker: "Worker",
+      noMatchTitle: "No matching nodes",
+      noMatchDescription: "Adjust the search query, or turn off failed-only mode."
     },
     eventLog: {
       droppedEvents: "Dropped events {count}",
       droppedLogs: "Dropped logs {count}",
       empty: "No records match the current filters.",
+      emptyTitle: "No matching events",
+      emptyDescription: "Clear the filters, or wait for targets to report new events.",
+      clearFilters: "Clear filters",
       logTitle: "Log record",
       auditTitle: "Command audit: {command}",
       eventDetail: "{path}, correlation ID: {correlationId}",
@@ -376,6 +484,8 @@ export const messages = {
     },
     nodeDetail: {
       chooseNode: "Select a supervisor node.",
+      emptyTitle: "Select a node",
+      emptyDescription: "Select a supervisor or worker in the topology to view runtime state and recent events.",
       health: "Health",
       readiness: "Readiness",
       restartCount: "Restart count",
@@ -389,7 +499,15 @@ export const messages = {
     },
     diagnostics: {
       commandResult: "Command result: {result}",
-      empty: "There are no structured errors."
+      empty: "There are no structured errors.",
+      emptyTitle: "No diagnostics",
+      emptyDescription: "Connection errors, command validation errors and target failures will appear here."
+    },
+    runtime: {
+      emptyTitle: "No runtime state",
+      emptyDescription: "Child lifecycle and restart counts will appear after the target reports supervisor tree state.",
+      generationAndAttempt: "Generation {generation}, attempt {attempt}",
+      restartCount: "Restarts {count}"
     },
     toast: {
       connecting: "Reconnecting",

@@ -119,6 +119,14 @@
   font-weight: 600;
 }
 
+.vue-flow__node.worker-kind {
+  border-radius: 9999px;
+}
+
+.vue-flow__node.supervisor-kind {
+  border-radius: 8px;
+}
+
 .vue-flow__node.selected {
   border-color: hsl(var(--primary));
   box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.18);
@@ -131,15 +139,4 @@
 
 .vue-flow__edge.animated .vue-flow__edge-path {
   stroke: #b45309;
-}
-
-
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }

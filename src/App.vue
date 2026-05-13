@@ -18,13 +18,6 @@ const lastCommandResult = ref<ControlCommandResult | null>(null);
 const commandPending = ref(false);
 const { t } = useI18n();
 
-const connectionLabel = computed(() => {
-  if (!relayUrl.trim()) {
-    return t("app.missingRelay");
-  }
-  return relayUrl;
-});
-
 const connectionPending = computed(() => stateStore.state.connectionState === "connecting");
 
 function connect(): void {
@@ -137,7 +130,6 @@ onBeforeUnmount(() => {
 
 <template>
   <DashboardShell
-    :connection-label="connectionLabel"
     :last-command-result="lastCommandResult"
     :command-pending="commandPending"
     :connection-pending="connectionPending"

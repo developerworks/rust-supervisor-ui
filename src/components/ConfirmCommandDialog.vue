@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { AlertTriangle } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { Box, FieldStack, Heading, InlineGroup, Section, Text } from "@/components/layout";
 import Button from "@/components/ui/Button.vue";
 import Checkbox from "@/components/ui/Checkbox.vue";
 import Label from "@/components/ui/Label.vue";
@@ -64,44 +65,44 @@ function submit(): void {
 
 <template>
   <Teleport to="body">
-    <div v-if="props.open" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" role="presentation">
-      <section
+    <Box v-if="props.open" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" role="presentation">
+      <Section
         class="w-full max-w-lg rounded-lg border bg-card p-5 shadow-panel"
         role="dialog"
         aria-modal="true"
         aria-label="confirm command"
       >
-        <div class="flex items-start gap-3">
-          <div class="rounded-md bg-red-50 p-2 text-red-700 dark:bg-red-950 dark:text-red-200">
+        <InlineGroup align="start" class="gap-3">
+          <Box class="rounded-md bg-red-50 p-2 text-red-700 dark:bg-red-950 dark:text-red-200">
             <AlertTriangle class="h-5 w-5" aria-hidden="true" />
-          </div>
-          <div class="min-w-0">
-            <h2 class="text-base font-semibold leading-6 text-foreground">{{ t("confirmCommand.title") }}</h2>
-            <p class="mt-1 text-sm leading-5 text-muted-foreground">
+          </Box>
+          <Box class="min-w-0">
+            <Heading level="2" class="text-base font-semibold leading-6 text-foreground">{{ t("confirmCommand.title") }}</Heading>
+            <Text class="mt-1 text-sm leading-5 text-muted-foreground">
               {{ t("confirmCommand.description", { command: commandLabel, targetPath: props.targetPath }) }}
-            </p>
-          </div>
-        </div>
+            </Text>
+          </Box>
+        </InlineGroup>
 
-        <div class="mt-4 flex flex-col gap-2">
+        <FieldStack class="mt-4 gap-2">
           <Label for="confirm-reason">{{ t("control.reason") }}</Label>
           <Textarea id="confirm-reason" v-model="localReason" aria-label="confirm reason" :placeholder="t('confirmCommand.reasonPlaceholder')" />
-        </div>
+        </FieldStack>
 
-        <div class="mt-4 flex items-center gap-3">
+        <InlineGroup class="mt-4 gap-3">
           <Checkbox v-model="confirmed" ariaLabel="danger confirmation" />
-          <span class="text-sm text-foreground">{{ t("confirmCommand.confirmation") }}</span>
-        </div>
+          <Text as="span" class="text-sm text-foreground">{{ t("confirmCommand.confirmation") }}</Text>
+        </InlineGroup>
 
-        <p v-if="error" class="mt-3 rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+        <Text v-if="error" class="mt-3 rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
           {{ error }}
-        </p>
+        </Text>
 
-        <div class="mt-5 flex justify-end gap-2">
+        <InlineGroup justify="end" class="mt-5 gap-2">
           <Button variant="outline" @click="emit('close')">{{ t("common.cancel") }}</Button>
           <Button variant="destructive" :disabled="!canSubmit" @click="submit">{{ t("common.confirmSubmit") }}</Button>
-        </div>
-      </section>
-    </div>
+        </InlineGroup>
+      </Section>
+    </Box>
   </Teleport>
 </template>
