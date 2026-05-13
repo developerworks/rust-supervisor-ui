@@ -2,7 +2,7 @@
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
-import { VueFlow, type Node, type NodeMouseEvent, useVueFlow } from "@vue-flow/core";
+import { VueFlow, type Node, type NodeDragEvent, type NodeMouseEvent, useVueFlow } from "@vue-flow/core";
 import { AlertTriangle, Info, Maximize2, Network, RefreshCw, Search } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import { Box, Grid, InlineGroup, InteractiveRow, PanelHeader, Text } from "@/components/layout";
@@ -24,16 +24,24 @@ import { useProtocolLabels } from "@/i18n/protocolLabels";
 import { stateStore } from "@/state/stateStore";
 import type { LifecycleState, SupervisorNode } from "@/types/protocol";
 
+interface StoredTopologyNodePosition {
+  x: number;
+  y: number;
+}
+
+const topologyPositionStorageKey = "rust-supervisor-ui:topology-node-positions";
 const { t } = useI18n();
 const protocolLabels = useProtocolLabels();
 const { fitView } = useVueFlow();
 const state = computed(() => stateStore.selectedDashboardState.value);
+const selectedTargetId = computed(() => stateStore.state.selectedTargetId);
 const selectedNodePath = computed(() => stateStore.state.selectedNodePath);
 const searchQuery = ref("");
 const failedOnly = ref(false);
 const legendOpen = ref(false);
 const layoutVersion = ref(0);
 const canvasFocused = ref(false);
+const manualNodePositions = ref(loadManualNodePositions());
 const edgeTypes = markRaw({
   [topologyEdgeType]: OffsetBezierEdge
 });
@@ -68,18 +76,22 @@ const flowNodes = computed<Node[]>(() => {
   if (!state.value) {
     return [];
   }
-  return visibleTopologyNodes.value.map((node, index) => ({
-    id: node.path,
-    label: nodeLabel(node),
-    position: flowNodePositions.value.get(node.path) ?? { x: 80 + index * 240, y: 30 },
-    data: { label: nodeLabel(node) },
-    class: [
-      "supervisor-node",
-      node.kind === "root_supervisor" ? "supervisor-kind" : "worker-kind",
-      stateClass(node.state_summary as LifecycleState),
-      selectedNodePath.value === node.path ? "selected" : ""
-    ].join(" ")
-  }));
+  return visibleTopologyNodes.value.map((node, index) => {
+    const manualPosition = manualNodePositions.value.get(manualPositionKey(node.path));
+    const autoPosition = flowNodePositions.value.get(node.path) ?? { x: 80 + index * 240, y: 30 };
+    return {
+      id: node.path,
+      label: nodeLabel(node),
+      position: manualPosition ?? autoPosition,
+      data: { label: nodeLabel(node) },
+      class: [
+        "supervisor-node",
+        node.kind === "root_supervisor" ? "supervisor-kind" : "worker-kind",
+        stateClass(node.state_summary as LifecycleState),
+        selectedNodePath.value === node.path ? "selected" : ""
+      ].join(" ")
+    };
+  });
 });
 
 const flowEdges = computed(() => {
@@ -115,6 +127,62 @@ function selectFlowNode(event: NodeMouseEvent): void {
   stateStore.selectNode(event.node.id);
 }
 
+function manualPositionKey(nodePath: string): string {
+  return `${selectedTargetId.value ?? "unselected"}:${nodePath}`;
+}
+
+function loadManualNodePositions(): Map<string, StoredTopologyNodePosition> {
+  try {
+    const saved = localStorage.getItem(topologyPositionStorageKey);
+    if (!saved) {
+      return new Map();
+    }
+    const parsed = JSON.parse(saved) as Record<string, StoredTopologyNodePosition>;
+    const positions = new Map<string, StoredTopologyNodePosition>();
+    for (const [key, position] of Object.entries(parsed)) {
+      if (Number.isFinite(position.x) && Number.isFinite(position.y)) {
+        positions.set(key, { x: position.x, y: position.y });
+      }
+    }
+    return positions;
+  } catch {
+    return new Map();
+  }
+}
+
+function persistManualNodePositions(positions: Map<string, StoredTopologyNodePosition>): void {
+  try {
+    localStorage.setItem(topologyPositionStorageKey, JSON.stringify(Object.fromEntries(positions)));
+  } catch {
+    // 布局持久化只是体验增强, 私密浏览或存储策略拒绝写入时可以忽略.
+  }
+}
+
+function storeManualNodePosition(event: NodeDragEvent): void {
+  const nextPositions = new Map(manualNodePositions.value);
+  nextPositions.set(manualPositionKey(event.node.id), {
+    x: event.node.position.x,
+    y: event.node.position.y
+  });
+  manualNodePositions.value = nextPositions;
+  persistManualNodePositions(nextPositions);
+}
+
+function clearManualNodePositionsForCurrentTarget(): void {
+  const targetId = selectedTargetId.value;
+  if (!targetId) {
+    manualNodePositions.value = new Map();
+    persistManualNodePositions(manualNodePositions.value);
+    return;
+  }
+  const nextPositions = new Map(manualNodePositions.value);
+  for (const node of visibleTopologyNodes.value) {
+    nextPositions.delete(`${targetId}:${node.path}`);
+  }
+  manualNodePositions.value = nextPositions;
+  persistManualNodePositions(nextPositions);
+}
+
 function handleGlobalPointerDown(event: PointerEvent): void {
   const target = event.target;
   canvasFocused.value = target instanceof Element && Boolean(target.closest('[data-testid="topology-canvas"]'));
@@ -130,6 +198,7 @@ async function fitTopologyView(): Promise<void> {
 }
 
 async function relayoutTopology(): Promise<void> {
+  clearManualNodePositionsForCurrentTarget();
   layoutVersion.value += 1;
   await fitTopologyView();
 }
@@ -240,6 +309,7 @@ onBeforeUnmount(() => {
           :zoom-on-pinch="canvasFocused"
           :zoom-on-scroll="canvasFocused"
           @node-click="selectFlowNode"
+          @node-drag-stop="storeManualNodePosition"
         >
           <Background pattern-color="#cbd5e1" :gap="18" />
           <Controls position="bottom-right" />

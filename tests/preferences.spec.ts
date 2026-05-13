@@ -53,7 +53,7 @@ test("renders the single dashboard layout without layout switching", async ({ pa
   await expect(page.getByTestId("dashboard-log-workspace")).toBeVisible();
   await expect(page.getByTestId("dashboard-bottom-panel")).toHaveCount(0);
   await expect(page.getByRole("tab")).toHaveCount(0);
-  await expect(page.getByTestId("runtime-state-panel")).toBeVisible();
+  await expect(page.getByTestId("runtime-state-panel")).toHaveCount(0);
   await expect(page.getByTestId("diagnostics-panel")).toBeVisible();
   await expect(page.getByTestId("dashboard-sidebar-layout")).toHaveCount(0);
   await expect(page.getByRole("menuitem", { name: /布局/ })).toHaveCount(0);

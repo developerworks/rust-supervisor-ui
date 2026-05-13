@@ -13,5 +13,6 @@ describe("dashboard inspector layout", () => {
     expect(source).toContain("divide-y divide-border");
     expect(source).toContain("<Box class=\"pb-4\">");
     expect(source).toContain("<Box class=\"py-4\">");
+    expect(source).not.toContain("RuntimeStatePanel");
   });
 });

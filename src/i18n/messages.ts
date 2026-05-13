@@ -80,8 +80,6 @@ export const messages = {
       eventTitle: "事件和日志流",
       nodeDetail: "节点详情",
       nodeTitle: "运行状态",
-      runtime: "运行",
-      runtimeTitle: "目标运行状态",
       diagnostics: "诊断",
       diagnosticsTitle: "会话诊断"
     },
@@ -268,12 +266,6 @@ export const messages = {
       emptyTitle: "当前没有诊断信息",
       emptyDescription: "连接错误, 命令校验错误和目标异常会显示在这里."
     },
-    runtime: {
-      emptyTitle: "暂无运行状态",
-      emptyDescription: "目标上报监督树状态后, 这里会显示子任务生命周期和重启次数.",
-      generationAndAttempt: "代次 {generation}, 尝试 {attempt}",
-      restartCount: "重启 {count}"
-    },
     toast: {
       connecting: "正在重新连接",
       commandSent: "命令已提交",
@@ -363,8 +355,6 @@ export const messages = {
       eventTitle: "Events and logs",
       nodeDetail: "Node detail",
       nodeTitle: "Runtime state",
-      runtime: "Runtime",
-      runtimeTitle: "Target runtime state",
       diagnostics: "Diagnostics",
       diagnosticsTitle: "Session diagnostics"
     },
@@ -550,12 +540,6 @@ export const messages = {
       empty: "There are no structured errors.",
       emptyTitle: "No diagnostics",
       emptyDescription: "Connection errors, command validation errors and target failures will appear here."
-    },
-    runtime: {
-      emptyTitle: "No runtime state",
-      emptyDescription: "Child lifecycle and restart counts will appear after the target reports supervisor tree state.",
-      generationAndAttempt: "Generation {generation}, attempt {attempt}",
-      restartCount: "Restarts {count}"
     },
     toast: {
       connecting: "Reconnecting",

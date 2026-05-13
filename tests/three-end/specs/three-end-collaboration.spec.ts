@@ -13,16 +13,15 @@ test("runs the real supervisor relay supervisor UI collaboration path", async ({
   await expect(page.getByTestId("node-detail")).toContainText("失败");
   await expect(page.getByTestId("node-detail")).toContainText("duplicate event window exceeded");
 
-  await expect(page.getByTestId("runtime-state-panel")).toContainText("运行中");
-  await expect(page.getByTestId("runtime-state-panel")).toContainText("失败");
-  await expect(page.getByTestId("runtime-state-panel")).toContainText("暂停");
+  await expect(page.getByTestId("runtime-state-panel")).toHaveCount(0);
+  await expect(page.getByTestId("topology-canvas")).toContainText("运行中");
+  await expect(page.getByTestId("topology-canvas")).toContainText("失败");
 
   await expect(page.getByTestId("event-log")).toContainText("子任务失败");
   await expect(page.getByTestId("event-log")).toContainText("invoice writer is paused");
 
   await page.getByRole("combobox", { name: "severity filter" }).click();
   await page.getByRole("option", { name: "错误" }).click();
-  await page.getByRole("button", { name: /应用/ }).click();
   await expect(page.getByTestId("event-log")).toContainText("子任务失败");
 
   await expect(page.getByTestId("command-target-path")).toContainText("/root/duplicate_guard");
