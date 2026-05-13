@@ -3,6 +3,7 @@ dist/
 coverage/
 test-results/
 playwright-report/
+tests/three-end/certs/
 *.log
 .env
 .env.*

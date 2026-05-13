@@ -9,6 +9,7 @@
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest --config vitest.config.ts",
     "test:e2e": "VITE_SUPERVISOR_RELAY_URL=wss://127.0.0.1:9443/supervisor npm run build && VITE_SUPERVISOR_RELAY_URL=wss://127.0.0.1:9443/supervisor playwright test",
+    "test:e2e:three-end": "bash tests/three-end/support/generate-local-mtls-certs.sh && VITE_SUPERVISOR_RELAY_URL=wss://localhost:9443/supervisor npm run build && VITE_SUPERVISOR_RELAY_URL=wss://localhost:9443/supervisor playwright test --config playwright.three-end.config.ts",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
