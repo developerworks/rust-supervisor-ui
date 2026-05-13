@@ -1,9 +1,3 @@
-import {
-  createAuditEvent,
-  createCommandEvent,
-  createCommandResult,
-  createInitialServerMessages
-} from "@/mock/dashboardData";
 import type {
   ClientMessage,
   ControlCommandRequest,
@@ -30,8 +24,8 @@ export interface CommandValidationResult {
 }
 
 export function createDashboardSessionClient(url = defaultRelayUrl()): DashboardSessionClient {
-  if (url.startsWith("mock://")) {
-    return new MockDashboardSessionClient();
+  if (!isSecureRelayUrl(url)) {
+    return new ConfigurationErrorDashboardSessionClient(url);
   }
   return new WebSocketDashboardSessionClient(url);
 }
@@ -45,7 +39,7 @@ export function validateCommandRequest(
   if (!controlSessionEstablished) {
     return invalid("control_session_missing", "session", "Control session is not established.");
   }
-  if (!relayUrl.startsWith("wss://") && !relayUrl.startsWith("mock://")) {
+  if (!isSecureRelayUrl(relayUrl)) {
     return invalid("insecure_transport", "transport", "Full control requires wss:// transport.");
   }
   if (!isControlCommandName(request.command)) {
@@ -67,7 +61,11 @@ export function validateCommandRequest(
 }
 
 function defaultRelayUrl(): string {
-  return import.meta.env.VITE_SUPERVISOR_RELAY_URL || "mock://dashboard";
+  return import.meta.env.VITE_SUPERVISOR_RELAY_URL || "";
+}
+
+function isSecureRelayUrl(url: string): boolean {
+  return url.trim().startsWith("wss://");
 }
 
 function invalid(code: string, stage: string, message: string): CommandValidationResult {
@@ -82,62 +80,25 @@ function invalid(code: string, stage: string, message: string): CommandValidatio
   };
 }
 
-class MockDashboardSessionClient implements DashboardSessionClient {
-  private handlers: DashboardSessionHandlers | null = null;
-  private timers: number[] = [];
+class ConfigurationErrorDashboardSessionClient implements DashboardSessionClient {
+  constructor(private readonly url: string) {}
 
   connect(handlers: DashboardSessionHandlers): void {
-    this.handlers = handlers;
-    createInitialServerMessages().forEach((message, index) => {
-      const timer = window.setTimeout(() => handlers.onMessage(message), index * 30);
-      this.timers.push(timer);
+    handlers.onError({
+      code: "invalid_relay_url",
+      stage: "configuration",
+      message: invalidRelayUrlMessage(this.url),
+      retryable: false
     });
+    handlers.onClose?.();
   }
 
-  send(message: ClientMessage): void {
-    if (!this.handlers) {
-      return;
-    }
-    if (message.type === "filter_update") {
-      return;
-    }
-    const validation = validateCommandRequest(message, true, "mock://dashboard");
-    if (!validation.valid && validation.error) {
-      this.handlers.onError(validation.error);
-      return;
-    }
-    const result = createCommandResult(message);
-    const audit = createAuditEvent(message, result);
-    const commandEvent = createCommandEvent(message);
-    this.handlers.onMessage({
-      type: "command_result",
-      target_id: message.target_id,
-      result
-    });
-    this.handlers.onMessage({
-      type: "state_delta",
-      target_id: message.target_id,
-      delta: result.state_delta ?? {}
-    });
-    this.handlers.onMessage({
-      type: "audit_event",
-      target_id: message.target_id,
-      audit
-    });
-    this.handlers.onMessage({
-      type: "event",
-      target_id: message.target_id,
-      event: commandEvent
-    });
+  send(): void {
+    return;
   }
 
   close(): void {
-    for (const timer of this.timers) {
-      window.clearTimeout(timer);
-    }
-    this.timers = [];
-    this.handlers?.onClose?.();
-    this.handlers = null;
+    return;
   }
 }
 
@@ -199,4 +160,11 @@ class WebSocketDashboardSessionClient implements DashboardSessionClient {
     this.socket?.close();
     this.socket = null;
   }
+}
+
+function invalidRelayUrlMessage(url: string): string {
+  if (!url.trim()) {
+    return "VITE_SUPERVISOR_RELAY_URL is required and must use wss://.";
+  }
+  return "VITE_SUPERVISOR_RELAY_URL must use wss://.";
 }

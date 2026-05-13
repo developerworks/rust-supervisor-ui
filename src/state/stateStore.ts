@@ -15,7 +15,7 @@ interface DashboardStateStore {
   sessionId: string | null;
   identity: RemoteIdentity | null;
   controlSessionEstablished: boolean;
-  connectionState: "idle" | "connecting" | "established" | "closed" | "mock";
+  connectionState: "idle" | "connecting" | "established" | "closed";
   targets: TargetSummary[];
   states: Record<string, DashboardState>;
   selectedTargetId: string | null;

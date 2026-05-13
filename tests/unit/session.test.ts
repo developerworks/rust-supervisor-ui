@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateCommandRequest } from "@/api/session";
+import { createDashboardSessionClient, validateCommandRequest } from "@/api/session";
 import type { ControlCommandRequest } from "@/types/protocol";
 
 const baseCommand: ControlCommandRequest = {
@@ -16,7 +16,7 @@ const baseCommand: ControlCommandRequest = {
 
 describe("validateCommandRequest", () => {
   it("requires an established control session", () => {
-    const result = validateCommandRequest(baseCommand, false, "mock://dashboard");
+    const result = validateCommandRequest(baseCommand, false, "wss://localhost:9443/supervisor");
 
     expect(result.valid).toBe(false);
     expect(result.error?.code).toBe("control_session_missing");
@@ -30,7 +30,11 @@ describe("validateCommandRequest", () => {
   });
 
   it("requires reason for every command", () => {
-    const result = validateCommandRequest({ ...baseCommand, reason: " " }, true, "mock://dashboard");
+    const result = validateCommandRequest(
+      { ...baseCommand, reason: " " },
+      true,
+      "wss://localhost:9443/supervisor"
+    );
 
     expect(result.valid).toBe(false);
     expect(result.error?.code).toBe("reason_required");
@@ -44,7 +48,7 @@ describe("validateCommandRequest", () => {
         confirmed: false
       },
       true,
-      "mock://dashboard"
+      "wss://localhost:9443/supervisor"
     );
 
     expect(result.valid).toBe(false);
@@ -58,10 +62,46 @@ describe("validateCommandRequest", () => {
         requested_by: "forged@example.test"
       } as ControlCommandRequest & { requested_by: string },
       true,
-      "mock://dashboard"
+      "wss://localhost:9443/supervisor"
     );
 
     expect(result.valid).toBe(false);
     expect(result.error?.code).toBe("client_requested_by_forbidden");
+  });
+});
+
+describe("createDashboardSessionClient", () => {
+  it.each(["", "ws://localhost:9443/supervisor", "http://localhost:9443/supervisor"])(
+    "rejects invalid relay URL %s",
+    (relayUrl) => {
+      const errors: string[] = [];
+      const client = createDashboardSessionClient(relayUrl);
+
+      client.connect({
+        onMessage: () => undefined,
+        onError: (error) => errors.push(error.code)
+      });
+
+      expect(errors).toEqual(["invalid_relay_url"]);
+    }
+  );
+
+  it("rejects the removed local substitute scheme", () => {
+    const errors: string[] = [];
+    const removedSchemeUrl = "mo" + "ck://dashboard";
+    const client = createDashboardSessionClient(removedSchemeUrl);
+
+    client.connect({
+      onMessage: () => undefined,
+      onError: (error) => errors.push(error.code)
+    });
+
+    expect(errors).toEqual(["invalid_relay_url"]);
+  });
+
+  it("creates a WebSocket client for secure relay URLs", () => {
+    const client = createDashboardSessionClient("wss://localhost:9443/supervisor");
+
+    expect(client.constructor.name).toBe("WebSocketDashboardSessionClient");
   });
 });

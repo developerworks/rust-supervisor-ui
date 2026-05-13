@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { paymentsState } from "@/mock/dashboardData";
 import { eventStore } from "@/state/eventStore";
+import { validStateSample } from "./protocolSamples";
 
 describe("eventStore", () => {
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe("eventStore", () => {
   });
 
   it("loads state events and dropped counts", () => {
-    eventStore.applyDashboardState(paymentsState);
+    eventStore.applyDashboardState(validStateSample);
 
     expect(eventStore.state.events).toHaveLength(3);
     expect(eventStore.droppedEventTotal.value).toBe(2);
@@ -21,7 +21,7 @@ describe("eventStore", () => {
   });
 
   it("filters by event type, severity and correlation id", () => {
-    eventStore.applyDashboardState(paymentsState);
+    eventStore.applyDashboardState(validStateSample);
     eventStore.setFilters({
       event_types: ["child_failed"],
       severities: ["error"],
@@ -36,9 +36,9 @@ describe("eventStore", () => {
   });
 
   it("detects sequence regressions without reordering the visible stream", () => {
-    eventStore.applyDashboardState(paymentsState);
+    eventStore.applyDashboardState(validStateSample);
     eventStore.appendEvent({
-      ...paymentsState.recent_events[0],
+      ...validStateSample.recent_events[0],
       sequence: 999,
       correlation_id: "late-event"
     });
@@ -48,7 +48,7 @@ describe("eventStore", () => {
   });
 
   it("updates dropped counts from relay stream diagnostics", () => {
-    eventStore.applyDashboardState(paymentsState);
+    eventStore.applyDashboardState(validStateSample);
     eventStore.setDroppedCount("payments-worker-a", 7, 3);
 
     expect(eventStore.droppedEventTotal.value).toBe(7);

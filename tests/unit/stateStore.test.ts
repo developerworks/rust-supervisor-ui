@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { billingState, paymentsState, mockTargets } from "@/mock/dashboardData";
 import { stateStore } from "@/state/stateStore";
+import { secondaryStateSample, validStateSample, validTargetsSample } from "./protocolSamples";
 
 describe("stateStore", () => {
   beforeEach(() => {
@@ -15,7 +15,7 @@ describe("stateStore", () => {
         principal: "operator@example.test",
         source: "mtls"
       },
-      targets: mockTargets
+      targets: validTargetsSample
     });
 
     expect(stateStore.state.controlSessionEstablished).toBe(true);
@@ -30,9 +30,9 @@ describe("stateStore", () => {
         principal: "operator@example.test",
         source: "mtls"
       },
-      targets: mockTargets
+      targets: validTargetsSample
     });
-    stateStore.applyDashboardState("payments-worker-a", paymentsState);
+    stateStore.applyDashboardState("payments-worker-a", validStateSample);
     stateStore.selectNode("/root/duplicate_guard");
 
     expect(stateStore.selectedNode.value?.name).toBe("duplicate guard");
@@ -47,9 +47,9 @@ describe("stateStore", () => {
         principal: "operator@example.test",
         source: "mtls"
       },
-      targets: mockTargets
+      targets: validTargetsSample
     });
-    stateStore.applyDashboardState("billing-worker-b", billingState);
+    stateStore.applyDashboardState("billing-worker-b", secondaryStateSample);
     stateStore.selectTarget("billing-worker-b");
 
     expect(stateStore.state.diagnostics[0].code).toBe("target_unavailable");
@@ -63,7 +63,7 @@ describe("stateStore", () => {
         principal: "operator@example.test",
         source: "mtls"
       },
-      targets: mockTargets
+      targets: validTargetsSample
     });
 
     stateStore.setTargetConnectionState("payments-worker-a", "reconnecting");

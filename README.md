@@ -20,7 +20,7 @@ npm install
 npm run dev
 ```
 
-默认情况下, 页面使用 `mock://dashboard` 静态模拟会话, 用于本地开发和端到端测试. 连接真实 relay(中继) 时设置 `VITE_SUPERVISOR_RELAY_URL`.
+页面启动时必须通过 `VITE_SUPERVISOR_RELAY_URL` 提供真实 `wss://` relay(中继) 地址. 缺少地址或使用其他 scheme(协议方案) 时, 页面只显示配置错误, 不展示 target(目标), state(状态), event(事件) 或演示数据.
 
 ```bash
 VITE_SUPERVISOR_RELAY_URL=wss://localhost:9443/supervisor npm run dev
@@ -36,7 +36,7 @@ npm run build
 npm run test:e2e
 ```
 
-`npm run test:e2e` 会先执行 production build(生产构建), 再通过 Vite preview(构建预览服务器) 启动浏览器测试.
+`npm run test:e2e` 会先执行 production build(生产构建), 再启动本地 TLS(传输层安全协议) WebSocket(网络套接字协议) 协议测试服务和 Vite preview(构建预览服务器). 浏览器测试使用真实 `wss://` relay(中继) URL(统一资源定位符).
 
 ## 功能范围
 
@@ -61,4 +61,4 @@ npm run test:e2e
 - reason(原因) 为空.
 - 危险命令缺少二次确认.
 
-`src/api/session.ts` 提供真实 `wss://` WebSocket(网络套接字协议) 适配和 `mock://dashboard` 模拟适配. 模拟适配只用于本地 UI(用户界面) 和测试, 不表达 relay(中继) 生产行为.
+`src/api/session.ts` 只提供真实 `wss://` WebSocket(网络套接字协议) 适配. 空 URL(统一资源定位符), `ws://`, `http://` 和其他 scheme(协议方案) 都会进入配置错误状态.

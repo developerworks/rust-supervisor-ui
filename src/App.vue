@@ -20,12 +20,12 @@ import { stateStore } from "@/state/stateStore";
 import type { ClientMessage, ControlCommandRequest, ServerMessage } from "@/types/protocol";
 
 const sessionClient = ref<DashboardSessionClient | null>(null);
-const relayUrl = import.meta.env.VITE_SUPERVISOR_RELAY_URL || "mock://dashboard";
+const relayUrl = import.meta.env.VITE_SUPERVISOR_RELAY_URL || "";
 const lastCommandResult = ref("");
 
 const connectionLabel = computed(() => {
-  if (relayUrl.startsWith("mock://")) {
-    return "mock session(模拟会话)";
+  if (!relayUrl.trim()) {
+    return "relay(中继) URL 未配置";
   }
   return relayUrl;
 });
@@ -34,7 +34,7 @@ function connect(): void {
   stateStore.reset();
   eventStore.reset();
   lastCommandResult.value = "";
-  stateStore.state.connectionState = relayUrl.startsWith("mock://") ? "mock" : "connecting";
+  stateStore.state.connectionState = "connecting";
   const client = createDashboardSessionClient(relayUrl);
   sessionClient.value = client;
   client.connect({
