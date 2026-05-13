@@ -2,7 +2,17 @@
 import { computed } from "vue";
 import { ServerCog } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
-import { Box, List, ListItem, PanelHeader, Section, Text } from "@/components/layout";
+import {
+  Box,
+  DescriptionItem,
+  DescriptionList,
+  InlineGroup,
+  List,
+  ListItem,
+  PanelHeader,
+  Section,
+  Text
+} from "@/components/layout";
 import Badge from "@/components/ui/Badge.vue";
 import {
   Empty,
@@ -11,7 +21,6 @@ import {
   EmptyMedia,
   EmptyTitle
 } from "@/components/ui/empty";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useProtocolLabels } from "@/i18n/protocolLabels";
 import { stateStore } from "@/state/stateStore";
 import type { LifecycleState } from "@/types/protocol";
@@ -54,12 +63,12 @@ function stateVariant(state?: LifecycleState): "success" | "warning" | "danger" 
       </EmptyHeader>
     </Empty>
 
-    <ScrollArea v-else class="max-h-[28rem] rounded-md border">
+    <Box v-else class="rounded-md border">
       <List class="divide-y" data-testid="runtime-state-list">
         <ListItem
           v-for="runtimeState in runtimeStates"
           :key="runtimeState.child_path"
-          class="grid items-start gap-3 p-3 text-sm lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+          class="flex flex-col gap-3 p-3 text-sm"
         >
           <Box class="min-w-0">
             <Text class="break-all font-semibold leading-snug text-foreground">{{ runtimeState.child_path }}</Text>
@@ -67,15 +76,43 @@ function stateVariant(state?: LifecycleState): "success" | "warning" | "danger" 
               {{ t("runtime.generationAndAttempt", { generation: runtimeState.generation, attempt: runtimeState.attempt }) }}
             </Text>
           </Box>
-          <Badge :variant="stateVariant(runtimeState.lifecycle_state)">
-            {{ protocolLabels.lifecycle(runtimeState.lifecycle_state) }}
-          </Badge>
-          <Badge variant="outline">{{ protocolLabels.health(runtimeState.health) }}</Badge>
-          <Badge variant="muted">
-            {{ t("runtime.restartCount", { count: runtimeState.restart_count }) }}
-          </Badge>
+          <InlineGroup wrap gap="sm" data-testid="runtime-state-badges">
+            <Badge :variant="stateVariant(runtimeState.lifecycle_state)">
+              {{ protocolLabels.lifecycle(runtimeState.lifecycle_state) }}
+            </Badge>
+            <Badge variant="outline">{{ protocolLabels.health(runtimeState.health) }}</Badge>
+            <Badge variant="outline">{{ protocolLabels.readiness(runtimeState.readiness) }}</Badge>
+            <Badge variant="muted">
+              {{ t("runtime.restartCount", { count: runtimeState.restart_count }) }}
+            </Badge>
+          </InlineGroup>
+          <DescriptionList class="grid gap-3 text-sm sm:grid-cols-2">
+            <DescriptionItem :label="t('nodeDetail.health')">
+              {{ protocolLabels.health(runtimeState.health) }}
+            </DescriptionItem>
+            <DescriptionItem :label="t('nodeDetail.readiness')">
+              {{ protocolLabels.readiness(runtimeState.readiness) }}
+            </DescriptionItem>
+            <DescriptionItem :label="t('nodeDetail.restartCount')">
+              {{ runtimeState.restart_count }}
+            </DescriptionItem>
+            <DescriptionItem :label="t('nodeDetail.shutdownState')">
+              {{ protocolLabels.stateSummary(runtimeState.shutdown_state) }}
+            </DescriptionItem>
+          </DescriptionList>
+          <Box
+            v-if="runtimeState.last_failure || runtimeState.last_policy_decision"
+            class="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950"
+          >
+            <Text v-if="runtimeState.last_failure" class="whitespace-pre-wrap break-words text-sm leading-5 text-amber-950 dark:text-amber-100">
+              {{ t("nodeDetail.lastFailure", { value: runtimeState.last_failure }) }}
+            </Text>
+            <Text v-if="runtimeState.last_policy_decision" class="whitespace-pre-wrap break-words text-sm leading-5 text-amber-950 dark:text-amber-100">
+              {{ t("nodeDetail.lastPolicyDecision", { value: runtimeState.last_policy_decision }) }}
+            </Text>
+          </Box>
         </ListItem>
       </List>
-    </ScrollArea>
+    </Box>
   </Section>
 </template>

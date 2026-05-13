@@ -4,6 +4,7 @@ import ControlPanel from "@/components/ControlPanel.vue";
 import NodeDetailsPanel from "@/components/NodeDetailsPanel.vue";
 import TargetList from "@/components/TargetList.vue";
 import DiagnosticsPanel from "@/components/dashboard/DiagnosticsPanel.vue";
+import RuntimeStatePanel from "@/components/dashboard/RuntimeStatePanel.vue";
 import { Box, PanelHeader, Stack } from "@/components/layout";
 import Card from "@/components/ui/Card.vue";
 import type { ControlCommandRequest, ControlCommandResult } from "@/types/protocol";
@@ -40,6 +41,9 @@ const { t } = useI18n();
           :pending="commandPending"
           @command="(request) => emit('command', request)"
         />
+      </Box>
+      <Box class="py-4">
+        <RuntimeStatePanel />
       </Box>
       <Box class="pt-4">
         <DiagnosticsPanel id="dashboard-diagnostics-panel" :last-command-result="lastCommandResult" />
