@@ -42,6 +42,7 @@ const legendOpen = ref(false);
 const layoutVersion = ref(0);
 const canvasFocused = ref(false);
 const manualNodePositions = ref(loadManualNodePositions());
+let resizeFitTimer: number | null = null;
 const edgeTypes = markRaw({
   [topologyEdgeType]: OffsetBezierEdge
 });
@@ -197,6 +198,23 @@ async function fitTopologyView(): Promise<void> {
   fitView({ padding: 0.18, duration: 200 });
 }
 
+function scheduleFitTopologyView(): void {
+  if (resizeFitTimer !== null) {
+    window.clearTimeout(resizeFitTimer);
+  }
+  resizeFitTimer = window.setTimeout(() => {
+    resizeFitTimer = null;
+    void fitTopologyView();
+  }, 120);
+}
+
+function clearScheduledFitTopologyView(): void {
+  if (resizeFitTimer !== null) {
+    window.clearTimeout(resizeFitTimer);
+    resizeFitTimer = null;
+  }
+}
+
 async function relayoutTopology(): Promise<void> {
   clearManualNodePositionsForCurrentTarget();
   layoutVersion.value += 1;
@@ -205,12 +223,15 @@ async function relayoutTopology(): Promise<void> {
 
 onMounted(() => {
   window.addEventListener("pointerdown", handleGlobalPointerDown, true);
+  window.addEventListener("resize", scheduleFitTopologyView);
   window.addEventListener("blur", clearTopologyCanvasFocus);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("pointerdown", handleGlobalPointerDown, true);
+  window.removeEventListener("resize", scheduleFitTopologyView);
   window.removeEventListener("blur", clearTopologyCanvasFocus);
+  clearScheduledFitTopologyView();
 });
 </script>
 
