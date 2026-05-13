@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { AlertCircle, LockKeyhole, RadioTower, RefreshCw } from "lucide-vue-next";
-import ControlPanel from "@/components/ControlPanel.vue";
-import EventLogPanel from "@/components/EventLogPanel.vue";
-import FilterBar from "@/components/FilterBar.vue";
-import NodeDetailsPanel from "@/components/NodeDetailsPanel.vue";
-import TargetList from "@/components/TargetList.vue";
-import TopologyCanvas from "@/components/TopologyCanvas.vue";
-import Badge from "@/components/ui/Badge.vue";
-import Button from "@/components/ui/Button.vue";
-import Card from "@/components/ui/Card.vue";
+import { useI18n } from "vue-i18n";
+import { toast } from "vue-sonner";
+import DashboardShell from "@/components/dashboard/DashboardShell.vue";
 import {
   createDashboardSessionClient,
   validateCommandRequest,
@@ -17,29 +10,39 @@ import {
 } from "@/api/session";
 import { eventStore } from "@/state/eventStore";
 import { stateStore } from "@/state/stateStore";
-import type { ClientMessage, ControlCommandRequest, ServerMessage } from "@/types/protocol";
+import type { ClientMessage, ControlCommandRequest, ControlCommandResult, ServerMessage } from "@/types/protocol";
 
 const sessionClient = ref<SupervisorClientPort | null>(null);
 const relayUrl = import.meta.env.VITE_SUPERVISOR_RELAY_URL || "";
-const lastCommandResult = ref("");
+const lastCommandResult = ref<ControlCommandResult | null>(null);
+const commandPending = ref(false);
+const { t } = useI18n();
 
 const connectionLabel = computed(() => {
   if (!relayUrl.trim()) {
-    return "relay(中继) URL 未配置";
+    return t("app.missingRelay");
   }
   return relayUrl;
 });
 
+const connectionPending = computed(() => stateStore.state.connectionState === "connecting");
+
 function connect(): void {
+  sessionClient.value?.close();
   stateStore.reset();
   eventStore.reset();
-  lastCommandResult.value = "";
+  lastCommandResult.value = null;
+  commandPending.value = false;
   stateStore.state.connectionState = "connecting";
+  toast.info(t("toast.connecting"));
   const client = createDashboardSessionClient(relayUrl);
   sessionClient.value = client;
   client.connect({
     onMessage: handleServerMessage,
-    onError: (error) => stateStore.addDiagnostic(error),
+    onError: (error) => {
+      stateStore.addDiagnostic(error);
+      toast.error(t("toast.connectionError"));
+    },
     onClose: () => {
       stateStore.state.connectionState = "closed";
     }
@@ -87,7 +90,9 @@ function handleServerMessage(message: ServerMessage): void {
       }
       break;
     case "command_result":
-      lastCommandResult.value = `${message.result.command_id} ${message.result.status}`;
+      commandPending.value = false;
+      lastCommandResult.value = message.result;
+      toast.success(t("toast.commandCompleted"));
       if (message.result.state_delta) {
         stateStore.applyStateDelta(message.target_id, message.result.state_delta);
       }
@@ -96,7 +101,9 @@ function handleServerMessage(message: ServerMessage): void {
       eventStore.appendAudit(message.audit);
       break;
     case "error":
+      commandPending.value = false;
       stateStore.addDiagnostic(message.error);
+      toast.error(message.error.message || t("toast.connectionError"));
       break;
   }
 }
@@ -113,8 +120,11 @@ function sendCommand(request: ControlCommandRequest): void {
   );
   if (!validation.valid && validation.error) {
     stateStore.addDiagnostic(validation.error);
+    toast.error(t("toast.commandRejected"));
     return;
   }
+  commandPending.value = true;
+  toast.info(t("toast.commandSent"));
   sendClientMessage(request);
 }
 
@@ -126,75 +136,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main
-    class="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] text-slate-950"
-    data-framework="Vue"
-    data-component-library="shadcn-vue"
-    data-style-framework="Tailwind"
-  >
-    <header class="border-b bg-white/90 backdrop-blur">
-      <div class="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 class="text-xl font-semibold leading-7 tracking-normal text-slate-950">
-            Supervisor Dashboard
-          </h1>
-          <p class="mt-1 text-sm text-muted-foreground">
-            dashboard client(看板客户端) 通过 {{ connectionLabel }} 消费 relay(中继) 会话契约.
-          </p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <Badge variant="success">
-            <LockKeyhole class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {{ stateStore.state.identity?.principal ?? "等待身份" }}
-          </Badge>
-          <Badge variant="outline">
-            <RadioTower class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {{ stateStore.state.connectionState }}
-          </Badge>
-          <Button variant="outline" size="sm" @click="connect">
-            <RefreshCw class="h-4 w-4" aria-hidden="true" />
-            重新连接
-          </Button>
-        </div>
-      </div>
-    </header>
-
-    <div class="mx-auto grid max-w-[1600px] gap-4 px-4 py-4 xl:grid-cols-[20rem_minmax(0,1fr)_24rem]">
-      <aside class="relative z-10 space-y-4">
-        <TargetList />
-        <ControlPanel @command="sendCommand" />
-      </aside>
-
-      <section class="relative z-0 min-w-0 space-y-4">
-        <FilterBar @filter-update="sendClientMessage" />
-        <TopologyCanvas />
-        <EventLogPanel />
-      </section>
-
-      <aside class="relative z-0 space-y-4">
-        <NodeDetailsPanel />
-        <Card aria-label="diagnostics">
-          <div class="mb-3 flex items-center justify-between">
-            <div>
-              <p class="muted-label">diagnostics(诊断)</p>
-              <h2 class="panel-title">会话诊断</h2>
-            </div>
-            <AlertCircle class="h-5 w-5 text-slate-500" aria-hidden="true" />
-          </div>
-          <p v-if="lastCommandResult" class="mb-3 rounded-md border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-800">
-            command result(命令结果): {{ lastCommandResult }}
-          </p>
-          <div v-if="stateStore.state.diagnostics.length === 0" class="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-            当前没有结构化错误.
-          </div>
-          <ul v-else class="space-y-2" data-testid="diagnostics">
-            <li v-for="error in stateStore.state.diagnostics" :key="`${error.code}:${error.message}`" class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              <p class="font-semibold">{{ error.code }}</p>
-              <p class="mt-1 leading-5">{{ error.message }}</p>
-            </li>
-          </ul>
-        </Card>
-      </aside>
-    </div>
-  </main>
+  <DashboardShell
+    :connection-label="connectionLabel"
+    :last-command-result="lastCommandResult"
+    :command-pending="commandPending"
+    :connection-pending="connectionPending"
+    @reconnect="connect"
+    @filter-update="sendClientMessage"
+    @command="sendCommand"
+  />
 </template>

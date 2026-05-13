@@ -1,25 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Activity, AlertTriangle, Ban, Cable, RefreshCcw, Server } from "lucide-vue-next";
+import { useI18n } from "vue-i18n";
 import Badge from "@/components/ui/Badge.vue";
 import Card from "@/components/ui/Card.vue";
+import { useProtocolLabels } from "@/i18n/protocolLabels";
 import { stateStore } from "@/state/stateStore";
-import type { ConnectionState } from "@/types/protocol";
+import type { ConnectionState, SupportedCommand } from "@/types/protocol";
 
+const { t } = useI18n();
+const protocolLabels = useProtocolLabels();
 const targets = computed(() => stateStore.state.targets);
 const selectedTargetId = computed(() => stateStore.state.selectedTargetId);
 
 function statusLabel(state: ConnectionState): string {
-  const labels: Record<ConnectionState, string> = {
-    registered: "已注册",
-    disconnected: "未连接",
-    connecting: "连接中",
-    connected: "已连接",
-    reconnecting: "重连中",
-    unavailable: "不可用",
-    expired: "已过期"
-  };
-  return labels[state];
+  return t(`targetList.status.${state}`);
 }
 
 function statusVariant(state: ConnectionState): "success" | "warning" | "danger" | "muted" {
@@ -47,34 +42,38 @@ function statusIcon(state: ConnectionState) {
   }
   return Cable;
 }
+
+function commandList(commands: SupportedCommand[]): string {
+  return commands.map((command) => protocolLabels.command(command.name)).join(", ");
+}
 </script>
 
 <template>
-  <Card class="h-full" aria-label="target list">
+  <Card aria-label="target list">
     <div class="mb-3 flex items-center justify-between">
       <div>
-        <p class="muted-label">target list(目标列表)</p>
-        <h2 class="panel-title">目标进程</h2>
+        <p class="muted-label">{{ t("sections.targetList") }}</p>
+        <h2 class="panel-title">{{ t("sections.targetTitle") }}</h2>
       </div>
-      <Server class="h-5 w-5 text-slate-500" aria-hidden="true" />
+      <Server class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
     </div>
 
     <div v-if="targets.length === 0" class="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-      等待 target_list(目标列表) 消息.
+      {{ t("targetList.waiting") }}
     </div>
 
-    <div class="space-y-2" data-testid="target-list">
+    <div class="flex flex-col gap-2" data-testid="target-list">
       <button
         v-for="target in targets"
         :key="target.target_id"
         type="button"
         class="w-full rounded-md border p-3 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        :class="target.target_id === selectedTargetId ? 'border-primary bg-blue-50' : 'border-border bg-card'"
+        :class="target.target_id === selectedTargetId ? 'border-primary bg-secondary' : 'border-border bg-card'"
         @click="stateStore.selectTarget(target.target_id)"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="truncate text-sm font-semibold text-slate-950">{{ target.display_name }}</p>
+            <p class="truncate text-sm font-semibold text-foreground">{{ target.display_name }}</p>
             <p class="mt-0.5 truncate text-xs text-muted-foreground">{{ target.target_id }}</p>
           </div>
           <Badge :variant="statusVariant(target.connection_state)">
@@ -88,7 +87,7 @@ function statusIcon(state: ConnectionState) {
             class="h-3.5 w-3.5 text-red-600"
             aria-hidden="true"
           />
-          <span class="truncate">commands(命令): {{ target.supported_commands.map((command) => command.name).join(", ") }}</span>
+          <span class="truncate">{{ t("targetList.commands", { commands: commandList(target.supported_commands) }) }}</span>
         </div>
       </button>
     </div>

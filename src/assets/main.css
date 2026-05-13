@@ -8,24 +8,64 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    --background: 150 40% 98%;
+    --foreground: 164 86% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 215 92% 35%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 158 45% 92%;
+    --card-foreground: 164 86% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 164 86% 10%;
+    --primary: 142 72% 29%;
+    --primary-foreground: 138 76% 97%;
+    --secondary: 146 40% 92%;
     --secondary-foreground: 164 86% 16%;
-    --muted: 210 20% 94%;
-    --muted-foreground: 215 16% 38%;
-    --accent: 37 92% 92%;
-    --accent-foreground: 28 87% 20%;
+    --muted: 150 26% 93%;
+    --muted-foreground: 164 20% 34%;
+    --accent: 142 36% 90%;
+    --accent-foreground: 164 86% 14%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 24% 86%;
-    --input: 214 24% 86%;
-    --ring: 215 92% 35%;
+    --border: 150 22% 84%;
+    --input: 150 22% 84%;
+    --ring: 142 72% 29%;
     --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 164 52% 7%;
+    --foreground: 150 32% 94%;
+    --card: 164 42% 10%;
+    --card-foreground: 150 32% 94%;
+    --popover: 164 42% 10%;
+    --popover-foreground: 150 32% 94%;
+    --primary: 142 68% 45%;
+    --primary-foreground: 164 52% 7%;
+    --secondary: 164 32% 16%;
+    --secondary-foreground: 150 32% 94%;
+    --muted: 164 28% 14%;
+    --muted-foreground: 150 14% 68%;
+    --accent: 158 32% 18%;
+    --accent-foreground: 150 32% 94%;
+    --destructive: 0 68% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 164 22% 22%;
+    --input: 164 22% 22%;
+    --ring: 142 68% 45%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   * {
@@ -53,7 +93,7 @@
   }
 
   .panel-title {
-    @apply text-sm font-semibold leading-5 text-slate-950;
+    @apply text-sm font-semibold leading-5 text-foreground;
   }
 
   .muted-label {
@@ -63,12 +103,16 @@
   .status-dot {
     @apply inline-block h-2 w-2 rounded-full;
   }
+
+  .dashboard-shell {
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+  }
 }
 
 .vue-flow__node {
   border-radius: 8px;
   border: 1px solid hsl(var(--border));
-  background: #ffffff;
+  background: hsl(var(--card));
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
   color: hsl(var(--foreground));
   font-size: 12px;
@@ -77,14 +121,25 @@
 
 .vue-flow__node.selected {
   border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+  box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.18);
 }
 
 .vue-flow__edge-path {
-  stroke: #64748b;
+  stroke: hsl(var(--muted-foreground));
   stroke-width: 1.4;
 }
 
 .vue-flow__edge.animated .vue-flow__edge-path {
   stroke: #b45309;
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

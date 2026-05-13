@@ -4,10 +4,14 @@ import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import { VueFlow, type Edge, type Node, type NodeMouseEvent } from "@vue-flow/core";
 import { Network } from "lucide-vue-next";
+import { useI18n } from "vue-i18n";
 import Card from "@/components/ui/Card.vue";
+import { useProtocolLabels } from "@/i18n/protocolLabels";
 import { stateStore } from "@/state/stateStore";
 import type { LifecycleState, SupervisorNode } from "@/types/protocol";
 
+const { t } = useI18n();
+const protocolLabels = useProtocolLabels();
 const state = computed(() => stateStore.selectedDashboardState.value);
 const selectedNodePath = computed(() => stateStore.state.selectedNodePath);
 
@@ -39,7 +43,7 @@ const flowEdges = computed<Edge[]>(() => {
     source: edge.source_path,
     target: edge.target_path,
     animated: edge.kind === "dependency",
-    label: edge.kind === "dependency" ? "depends" : undefined,
+    label: edge.kind === "dependency" ? t("topology.dependencyLabel") : undefined,
     type: "smoothstep"
   }));
 });
@@ -54,20 +58,20 @@ function positionFor(index: number): { x: number; y: number } {
 }
 
 function nodeLabel(node: SupervisorNode): string {
-  return `${node.name}\n${node.state_summary}`;
+  return `${node.name}\n${protocolLabels.stateSummary(node.state_summary)}`;
 }
 
 function stateClass(state: LifecycleState): string {
   if (state === "failed" || state === "quarantined") {
-    return "border-red-300 bg-red-50 text-red-900";
+    return "border-red-300 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200";
   }
   if (state === "restarting" || state === "paused") {
-    return "border-amber-300 bg-amber-50 text-amber-900";
+    return "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200";
   }
   if (state === "running") {
-    return "border-emerald-300 bg-emerald-50 text-emerald-900";
+    return "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200";
   }
-  return "border-slate-300 bg-white text-slate-900";
+  return "border-border bg-card text-foreground";
 }
 
 function selectFlowNode(event: NodeMouseEvent): void {
@@ -79,17 +83,17 @@ function selectFlowNode(event: NodeMouseEvent): void {
   <Card class="min-h-[33rem]" aria-label="topology canvas">
     <div class="mb-3 flex items-center justify-between">
       <div>
-        <p class="muted-label">topology canvas(拓扑画布)</p>
-        <h2 class="panel-title">监督拓扑</h2>
+        <p class="muted-label">{{ t("sections.topologyCanvas") }}</p>
+        <h2 class="panel-title">{{ t("sections.topologyTitle") }}</h2>
       </div>
-      <Network class="h-5 w-5 text-slate-500" aria-hidden="true" />
+      <Network class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
     </div>
 
     <div v-if="!state" class="flex h-[26rem] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-      等待 state(状态).
+      {{ t("topology.waitingState") }}
     </div>
 
-    <div v-else class="h-[26rem] overflow-hidden rounded-md border bg-slate-50" data-testid="topology-canvas">
+    <div v-else class="h-[26rem] overflow-hidden rounded-md border bg-muted" data-testid="topology-canvas">
       <VueFlow
         :nodes="flowNodes"
         :edges="flowEdges"
@@ -109,10 +113,10 @@ function selectFlowNode(event: NodeMouseEvent): void {
         :key="node.path"
         type="button"
         class="rounded-md border px-3 py-2 text-left text-xs transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        :class="node.path === selectedNodePath ? 'border-primary bg-blue-50' : 'border-border bg-card'"
+        :class="node.path === selectedNodePath ? 'border-primary bg-secondary' : 'border-border bg-card'"
         @click="stateStore.selectNode(node.path)"
       >
-        <span class="block font-semibold text-slate-950">{{ node.name }}</span>
+        <span class="block font-semibold text-foreground">{{ node.name }}</span>
         <span class="block truncate text-muted-foreground">{{ node.path }}</span>
       </button>
     </div>

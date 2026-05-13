@@ -1,5 +1,7 @@
-import { createApp } from "vue";
+import { createApp, watch } from "vue";
 import App from "./App.vue";
+import { i18n, syncI18nLocale } from "@/i18n";
+import { initializePreferences, preferenceState } from "@/state/preferenceStore";
 import "./assets/main.css";
 
 declare global {
@@ -18,4 +20,7 @@ window.__RUST_SUPERVISOR_UI_BASELINE__ = {
   styleFramework: "Tailwind"
 };
 
-createApp(App).mount("#app");
+initializePreferences();
+watch(() => preferenceState.locale, syncI18nLocale, { immediate: true });
+
+createApp(App).use(i18n).mount("#app");

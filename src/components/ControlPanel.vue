@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { Play, ShieldCheck } from "lucide-vue-next";
+import { useI18n } from "vue-i18n";
 import Button from "@/components/ui/Button.vue";
 import Card from "@/components/ui/Card.vue";
 import Label from "@/components/ui/Label.vue";
-import Select from "@/components/ui/Select.vue";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import Textarea from "@/components/ui/Textarea.vue";
 import ConfirmCommandDialog from "@/components/ConfirmCommandDialog.vue";
 import { stateStore } from "@/state/stateStore";
@@ -15,6 +23,16 @@ const emit = defineEmits<{
   command: [request: ControlCommandRequest];
 }>();
 
+const props = withDefaults(
+  defineProps<{
+    pending?: boolean;
+  }>(),
+  {
+    pending: false
+  }
+);
+
+const { t } = useI18n();
 const command = ref<ControlCommandName>("pause_child");
 const reason = ref("");
 const localError = ref("");
@@ -29,20 +47,24 @@ const controlReady = computed(
     Boolean(selectedTarget.value)
 );
 
-const commandOptions = [
-  { value: "restart_child", label: "restart child(重启子任务)" },
-  { value: "pause_child", label: "pause child(暂停子任务)" },
-  { value: "resume_child", label: "resume child(恢复子任务)" },
-  { value: "quarantine_child", label: "quarantine child(隔离子任务)" },
-  { value: "remove_child", label: "remove child(移除子任务)" },
-  { value: "add_child", label: "add child(添加子任务)" },
-  { value: "shutdown_tree", label: "shutdown tree(关闭监督树)" }
-];
+const commandOptions = computed(() => [
+  { value: "restart_child", label: t("control.commands.restart_child") },
+  { value: "pause_child", label: t("control.commands.pause_child") },
+  { value: "resume_child", label: t("control.commands.resume_child") },
+  { value: "quarantine_child", label: t("control.commands.quarantine_child") },
+  { value: "remove_child", label: t("control.commands.remove_child") },
+  { value: "add_child", label: t("control.commands.add_child") },
+  { value: "shutdown_tree", label: t("control.commands.shutdown_tree") }
+] satisfies Array<{ value: ControlCommandName; label: string }>);
+
+const selectedCommandLabel = computed(
+  () => commandOptions.value.find((option) => option.value === command.value)?.label ?? t("control.selectCommand")
+);
 
 function submit(): void {
   localError.value = "";
   if (!reason.value.trim()) {
-    localError.value = "reason(原因) 必填.";
+    localError.value = t("control.reasonRequired");
     return;
   }
   if (isDangerousCommandName(command.value)) {
@@ -77,41 +99,56 @@ function buildRequest(confirmed: boolean, nextReason: string): ControlCommandReq
   <Card aria-label="control panel">
     <div class="mb-3 flex items-center justify-between">
       <div>
-        <p class="muted-label">control panel(控制面板)</p>
-        <h2 class="panel-title">监督命令</h2>
+        <p class="muted-label">{{ t("sections.controlPanel") }}</p>
+        <h2 class="panel-title">{{ t("sections.controlTitle") }}</h2>
       </div>
-      <ShieldCheck class="h-5 w-5 text-slate-500" aria-hidden="true" />
+      <ShieldCheck class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
     </div>
 
-    <form class="space-y-3" @submit.prevent="submit">
-      <div class="grid gap-3 md:grid-cols-2">
-        <div class="space-y-1.5">
-          <Label for="command-select">command(命令)</Label>
-          <Select id="command-select" v-model="command" ariaLabel="command select" :options="commandOptions" :disabled="!controlReady" />
+    <form class="flex flex-col gap-3" @submit.prevent="submit">
+      <div class="grid gap-3">
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <Label for="command-select">{{ t("control.command") }}</Label>
+          <Select v-model="command" :disabled="!controlReady || props.pending">
+            <SelectTrigger id="command-select" aria-label="command select">
+              <span class="truncate">{{ selectedCommandLabel }}</span>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem v-for="option in commandOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
-        <div class="space-y-1.5">
-          <Label>target(目标)</Label>
-          <div class="flex h-9 items-center rounded-md border bg-muted px-3 text-sm text-slate-700">
-            {{ selectedNode?.path ?? "未选择节点" }}
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <Label>{{ t("control.target") }}</Label>
+          <div
+            class="flex h-9 min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-md border bg-muted px-3 text-sm text-foreground"
+            data-testid="command-target-path"
+          >
+            {{ selectedNode?.path ?? t("control.noNode") }}
           </div>
         </div>
       </div>
 
-      <div class="space-y-1.5">
-        <Label for="command-reason">reason(原因)</Label>
-        <Textarea id="command-reason" v-model="reason" aria-label="command reason" placeholder="说明本次控制命令原因" />
+      <div class="flex flex-col gap-1.5">
+        <Label for="command-reason">{{ t("control.reason") }}</Label>
+        <Textarea id="command-reason" v-model="reason" aria-label="command reason" :placeholder="t('control.reasonPlaceholder')" />
       </div>
 
-      <p v-if="!controlReady" class="rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800">
-        需要 connected(已连接) 目标和已建立 control session(控制会话).
+      <p v-if="!controlReady" class="rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        {{ t("control.notReady") }}
       </p>
-      <p v-if="localError" class="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+      <p v-if="localError" class="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
         {{ localError }}
       </p>
 
-      <Button type="submit" class="w-full" :disabled="!controlReady">
-        <Play class="h-4 w-4" aria-hidden="true" />
-        提交命令
+      <Button type="submit" class="w-full" :disabled="!controlReady || props.pending">
+        <Spinner v-if="props.pending" aria-hidden="true" />
+        <Play v-else class="h-4 w-4" aria-hidden="true" />
+        {{ props.pending ? t("control.submitting") : t("control.submit") }}
       </Button>
     </form>
 
