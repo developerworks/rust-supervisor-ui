@@ -16,6 +16,7 @@ interface DashboardStateStore {
   identity: RemoteIdentity | null;
   controlSessionEstablished: boolean;
   connectionState: "idle" | "connecting" | "established" | "closed";
+  filterConfigVersion: number;
   targets: TargetSummary[];
   states: Record<string, DashboardState>;
   selectedTargetId: string | null;
@@ -28,6 +29,7 @@ const state = reactive<DashboardStateStore>({
   identity: null,
   controlSessionEstablished: false,
   connectionState: "idle",
+  filterConfigVersion: 0,
   targets: [],
   states: {},
   selectedTargetId: null,
@@ -92,6 +94,7 @@ function resetDashboardStateStore(): void {
   state.identity = null;
   state.controlSessionEstablished = false;
   state.connectionState = "idle";
+  state.filterConfigVersion = 0;
   state.targets = [];
   state.states = {};
   state.selectedTargetId = null;
@@ -99,9 +102,18 @@ function resetDashboardStateStore(): void {
   state.diagnostics = [];
 }
 
-function applySessionEstablished(message: Extract<ServerMessage, { type: "session_established" }>): void {
+function applyServerHello(message: Extract<ServerMessage, { type: "server_hello" }>): void {
   state.sessionId = message.session_id;
-  state.identity = message.identity;
+  state.identity = {
+    client_identity: message.client_identity,
+    principal: message.client_identity,
+    source: "mtls"
+  };
+  state.filterConfigVersion = message.filter_config_version;
+  state.connectionState = "connecting";
+}
+
+function applyTargetList(message: Extract<ServerMessage, { type: "target_list" }>): void {
   state.controlSessionEstablished = true;
   state.connectionState = "established";
   state.targets = message.targets;
@@ -210,7 +222,8 @@ export const stateStore = {
   selectedRuntimeState,
   selectedNodeDetail,
   stateCounts,
-  applySessionEstablished,
+  applyServerHello,
+  applyTargetList,
   applyDashboardState,
   applyStateDelta,
   selectTarget,

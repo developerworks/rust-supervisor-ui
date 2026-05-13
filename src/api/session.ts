@@ -1,4 +1,5 @@
 import type {
+  ClientHelloMessage,
   ClientMessage,
   ControlCommandRequest,
   DashboardError,
@@ -12,7 +13,7 @@ export interface DashboardSessionHandlers {
   onClose?(): void;
 }
 
-export interface DashboardSessionClient {
+export interface SupervisorClientPort {
   connect(handlers: DashboardSessionHandlers): void;
   send(message: ClientMessage): void;
   close(): void;
@@ -23,7 +24,7 @@ export interface CommandValidationResult {
   error?: DashboardError;
 }
 
-export function createDashboardSessionClient(url = defaultRelayUrl()): DashboardSessionClient {
+export function createDashboardSessionClient(url = defaultRelayUrl()): SupervisorClientPort {
   if (!isSecureRelayUrl(url)) {
     return new ConfigurationErrorDashboardSessionClient(url);
   }
@@ -80,7 +81,7 @@ function invalid(code: string, stage: string, message: string): CommandValidatio
   };
 }
 
-class ConfigurationErrorDashboardSessionClient implements DashboardSessionClient {
+class ConfigurationErrorDashboardSessionClient implements SupervisorClientPort {
   constructor(private readonly url: string) {}
 
   connect(handlers: DashboardSessionHandlers): void {
@@ -102,7 +103,7 @@ class ConfigurationErrorDashboardSessionClient implements DashboardSessionClient
   }
 }
 
-class WebSocketDashboardSessionClient implements DashboardSessionClient {
+class WebSocketDashboardSessionClient implements SupervisorClientPort {
   private socket: WebSocket | null = null;
   private handlers: DashboardSessionHandlers | null = null;
 
@@ -122,7 +123,11 @@ class WebSocketDashboardSessionClient implements DashboardSessionClient {
     this.socket = new WebSocket(this.url);
     this.socket.addEventListener("message", (event) => {
       try {
-        handlers.onMessage(JSON.parse(event.data) as ServerMessage);
+        const message = JSON.parse(event.data) as ServerMessage;
+        handlers.onMessage(message);
+        if (message.type === "server_hello") {
+          this.send(createClientHello());
+        }
       } catch {
         handlers.onError({
           code: "invalid_server_message",
@@ -160,6 +165,28 @@ class WebSocketDashboardSessionClient implements DashboardSessionClient {
     this.socket?.close();
     this.socket = null;
   }
+}
+
+function createClientHello(): ClientHelloMessage {
+  return {
+    type: "client_hello",
+    client_store_id: browserClientStoreId(),
+    resume_cursor: {}
+  };
+}
+
+function browserClientStoreId(): string {
+  const key = "rust-supervisor.client_store_id";
+  const existing = globalThis.localStorage?.getItem(key);
+  if (existing) {
+    return existing;
+  }
+  const next =
+    typeof globalThis.crypto?.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : `store-${Date.now().toString(36)}-${Math.random().toString(16).slice(2)}`;
+  globalThis.localStorage?.setItem(key, next);
+  return next;
 }
 
 function invalidRelayUrlMessage(url: string): string {

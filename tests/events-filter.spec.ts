@@ -16,5 +16,5 @@ test("filters event and log records and shows dropped counts", async ({ page }) 
   await expect(page.getByTestId("event-log")).not.toContainText("child_restarted");
 
   await page.getByRole("button", { name: /清除/ }).click();
-  await expect(page.getByTestId("timeline-record")).toHaveCount(9);
+  await expect(page.getByTestId("timeline-record")).toHaveCount(10);
 });

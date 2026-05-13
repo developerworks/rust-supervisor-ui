@@ -13,13 +13,13 @@ import Card from "@/components/ui/Card.vue";
 import {
   createDashboardSessionClient,
   validateCommandRequest,
-  type DashboardSessionClient
+  type SupervisorClientPort
 } from "@/api/session";
 import { eventStore } from "@/state/eventStore";
 import { stateStore } from "@/state/stateStore";
 import type { ClientMessage, ControlCommandRequest, ServerMessage } from "@/types/protocol";
 
-const sessionClient = ref<DashboardSessionClient | null>(null);
+const sessionClient = ref<SupervisorClientPort | null>(null);
 const relayUrl = import.meta.env.VITE_SUPERVISOR_RELAY_URL || "";
 const lastCommandResult = ref("");
 
@@ -48,8 +48,11 @@ function connect(): void {
 
 function handleServerMessage(message: ServerMessage): void {
   switch (message.type) {
-    case "session_established":
-      stateStore.applySessionEstablished(message);
+    case "server_hello":
+      stateStore.applyServerHello(message);
+      break;
+    case "target_list":
+      stateStore.applyTargetList(message);
       break;
     case "state":
       stateStore.applyDashboardState(message.target_id, message.state);

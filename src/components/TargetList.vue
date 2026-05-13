@@ -60,7 +60,7 @@ function statusIcon(state: ConnectionState) {
     </div>
 
     <div v-if="targets.length === 0" class="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-      等待 session_established(会话建立) 消息.
+      等待 target_list(目标列表) 消息.
     </div>
 
     <div class="space-y-2" data-testid="target-list">
@@ -88,7 +88,7 @@ function statusIcon(state: ConnectionState) {
             class="h-3.5 w-3.5 text-red-600"
             aria-hidden="true"
           />
-          <span class="truncate">scope(授权范围): {{ target.authorization_scope }}</span>
+          <span class="truncate">commands(命令): {{ target.supported_commands.map((command) => command.name).join(", ") }}</span>
         </div>
       </button>
     </div>

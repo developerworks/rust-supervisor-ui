@@ -41,14 +41,7 @@ server.on("secureConnection", (stream) => {
       }
       stream.write(upgradeResponse(key));
       upgraded = true;
-      writeJson(stream, sessionEstablished());
-      for (const state of dashboardStates()) {
-        writeJson(stream, {
-          type: "state",
-          target_id: state.target.target_id,
-          state
-        });
-      }
+      writeJson(stream, serverHello());
       pending = rest;
     }
     if (upgraded && pending.length > 0) {
@@ -165,7 +158,18 @@ function parseFrames(buffer) {
 
 function handleClientMessage(stream, text) {
   const message = JSON.parse(text);
-  if (message.type === "filter_update") {
+  if (message.type === "client_hello") {
+    writeJson(stream, targetList());
+    for (const state of dashboardStates()) {
+      writeJson(stream, {
+        type: "state",
+        target_id: state.target.target_id,
+        state
+      });
+    }
+    return;
+  }
+  if (message.type === "log_event_filter_conditions") {
     return;
   }
   if (message.type !== "command") {
@@ -204,6 +208,7 @@ function handleClientMessage(stream, text) {
       audit_id: `audit-${message.command_id}`,
       identity: {
         principal: "operator@example.test",
+        client_identity: "mtls_cert_fingerprint:test-client",
         source: "mtls"
       },
       target_id: message.target_id,
@@ -217,35 +222,41 @@ function handleClientMessage(stream, text) {
   });
 }
 
-function sessionEstablished() {
+function serverHello() {
   return {
-    type: "session_established",
+    type: "server_hello",
     session_id: "session-valid-001",
-    identity: {
-      principal: "operator@example.test",
-      source: "mtls"
-    },
+    client_identity: "mtls_cert_fingerprint:test-client",
+    log_event_filter_mode: "remote",
+    log_event_filter_conditions: {},
+    filter_config_version: 1
+  };
+}
+
+function targetList() {
+  return {
+    type: "target_list",
     targets: [
       {
         target_id: "payments-worker-a",
         display_name: "payments worker a",
         registration_state: "active",
         connection_state: "connected",
-        authorization_scope: "payments:operate"
+        supported_commands: [{ name: "restart_child", idempotent: false, timeout_seconds: 30 }]
       },
       {
         target_id: "billing-worker-b",
         display_name: "billing worker b",
         registration_state: "active",
         connection_state: "unavailable",
-        authorization_scope: "billing:operate"
+        supported_commands: [{ name: "restart_child", idempotent: false, timeout_seconds: 30 }]
       },
       {
         target_id: "search-worker-c",
         display_name: "search worker c",
         registration_state: "active",
         connection_state: "reconnecting",
-        authorization_scope: "search:operate"
+        supported_commands: [{ name: "restart_child", idempotent: false, timeout_seconds: 30 }]
       }
     ]
   };
@@ -351,8 +362,7 @@ function paymentsState() {
   return {
     target: {
       target_id: targetId,
-      display_name: "payments worker a",
-      authorization_scope: "payments:operate"
+      display_name: "payments worker a"
     },
     topology: topology("payments root supervisor", [duplicateNode, retryNode]),
     runtime_state: [
@@ -381,8 +391,7 @@ function billingState() {
   return {
     target: {
       target_id: targetId,
-      display_name: "billing worker b",
-      authorization_scope: "billing:operate"
+      display_name: "billing worker b"
     },
     topology: topology("billing root supervisor", [invoiceNode]),
     runtime_state: [runtime("/root/invoice_writer", "paused", "healthy", "ready", 0)],
@@ -405,8 +414,7 @@ function searchState() {
   return {
     target: {
       target_id: targetId,
-      display_name: "search worker c",
-      authorization_scope: "search:operate"
+      display_name: "search worker c"
     },
     topology: topology("search root supervisor", [indexNode]),
     runtime_state: [runtime("/root/index_stream", "quarantined", "unhealthy", "not_ready", 5)],

@@ -8,10 +8,10 @@ import Label from "@/components/ui/Label.vue";
 import Select from "@/components/ui/Select.vue";
 import { eventStore } from "@/state/eventStore";
 import { stateStore } from "@/state/stateStore";
-import type { FilterUpdate, LifecycleState, Severity } from "@/types/protocol";
+import type { LogEventFilterConditionsMessage, LifecycleState, Severity } from "@/types/protocol";
 
 const emit = defineEmits<{
-  filterUpdate: [message: FilterUpdate];
+  filterUpdate: [message: LogEventFilterConditionsMessage];
 }>();
 
 const targetId = ref("");
@@ -19,7 +19,7 @@ const childPath = ref("");
 const lifecycleState = ref("");
 const eventType = ref("");
 const severity = ref("");
-const sequenceFrom = ref("");
+const sequenceMin = ref("");
 const correlationId = ref("");
 
 const targetOptions = computed(() => [
@@ -73,7 +73,7 @@ function applyFilters(): void {
     lifecycle_states: lifecycleState.value ? [lifecycleState.value as LifecycleState] : [],
     event_types: eventType.value ? [eventType.value] : [],
     severities: severity.value ? [severity.value as Severity] : [],
-    sequence_from: sequenceFrom.value ? Number(sequenceFrom.value) : undefined,
+    sequence_min: sequenceMin.value ? Number(sequenceMin.value) : undefined,
     correlation_id: correlationId.value || undefined
   });
   emit("filterUpdate", update);
@@ -85,7 +85,7 @@ function clearFilters(): void {
   lifecycleState.value = "";
   eventType.value = "";
   severity.value = "";
-  sequenceFrom.value = "";
+  sequenceMin.value = "";
   correlationId.value = "";
   emit("filterUpdate", eventStore.clearFilters());
 }
@@ -123,8 +123,8 @@ function clearFilters(): void {
         <Select id="severity-filter" v-model="severity" ariaLabel="severity filter" :options="severityOptions" />
       </div>
       <div class="space-y-1.5">
-        <Label for="sequence-filter">sequence from(起始序号)</Label>
-        <Input id="sequence-filter" v-model="sequenceFrom" type="number" aria-label="sequence filter" placeholder="1000" />
+        <Label for="sequence-filter">sequence minimum(最小序号)</Label>
+        <Input id="sequence-filter" v-model="sequenceMin" type="number" aria-label="sequence filter" placeholder="1000" />
       </div>
       <div class="space-y-1.5">
         <Label for="correlation-filter">correlation id(关联标识)</Label>

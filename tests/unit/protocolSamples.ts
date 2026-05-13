@@ -6,22 +6,21 @@ export const validTargetsSample: TargetSummary[] = [
     display_name: "payments worker a",
     registration_state: "active",
     connection_state: "connected",
-    authorization_scope: "payments:operate"
+    supported_commands: [{ name: "restart_child", idempotent: false, timeout_seconds: 30 }]
   },
   {
     target_id: "billing-worker-b",
     display_name: "billing worker b",
     registration_state: "active",
     connection_state: "unavailable",
-    authorization_scope: "billing:operate"
+    supported_commands: [{ name: "restart_child", idempotent: false, timeout_seconds: 30 }]
   }
 ];
 
 export const validStateSample: DashboardState = {
   target: {
     target_id: "payments-worker-a",
-    display_name: "payments worker a",
-    authorization_scope: "payments:operate"
+    display_name: "payments worker a"
   },
   topology: {
     root: {
@@ -172,8 +171,7 @@ export const secondaryStateSample: DashboardState = {
   ...validStateSample,
   target: {
     target_id: "billing-worker-b",
-    display_name: "billing worker b",
-    authorization_scope: "billing:operate"
+    display_name: "billing worker b"
   },
   topology: {
     ...validStateSample.topology,

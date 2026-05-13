@@ -3,7 +3,7 @@ import type {
   AuditEvent,
   DashboardState,
   EventRecord,
-  FilterUpdate,
+  LogEventFilterConditionsMessage,
   LifecycleState,
   LogRecord,
   Severity
@@ -20,7 +20,7 @@ export interface EventFilters {
   lifecycle_states: LifecycleState[];
   event_types: string[];
   severities: Severity[];
-  sequence_from?: number;
+  sequence_min?: number;
   correlation_id?: string;
 }
 
@@ -41,7 +41,7 @@ const emptyFilters = (): EventFilters => ({
   lifecycle_states: [],
   event_types: [],
   severities: [],
-  sequence_from: undefined,
+  sequence_min: undefined,
   correlation_id: undefined
 });
 
@@ -172,7 +172,7 @@ function setDroppedCount(targetId: string, eventCount: number, logCount?: number
   }
 }
 
-function setFilters(nextFilters: Partial<EventFilters>): FilterUpdate {
+function setFilters(nextFilters: Partial<EventFilters>): LogEventFilterConditionsMessage {
   state.filters = {
     ...state.filters,
     ...nextFilters
@@ -180,20 +180,20 @@ function setFilters(nextFilters: Partial<EventFilters>): FilterUpdate {
   return toFilterUpdate();
 }
 
-function clearFilters(): FilterUpdate {
+function clearFilters(): LogEventFilterConditionsMessage {
   state.filters = emptyFilters();
   return toFilterUpdate();
 }
 
-function toFilterUpdate(): FilterUpdate {
+function toFilterUpdate(): LogEventFilterConditionsMessage {
   return {
-    type: "filter_update",
+    type: "log_event_filter_conditions",
     target_ids: [...state.filters.target_ids],
     child_paths: [...state.filters.child_paths],
     lifecycle_states: [...state.filters.lifecycle_states],
     event_types: [...state.filters.event_types],
     severities: [...state.filters.severities],
-    sequence_from: state.filters.sequence_from,
+    sequence_min: state.filters.sequence_min,
     correlation_id: state.filters.correlation_id
   };
 }
@@ -206,8 +206,8 @@ function matchesFilters(record: TimelineRecord): boolean {
     return false;
   }
   if (
-    typeof state.filters.sequence_from === "number" &&
-    record.sequence < state.filters.sequence_from
+    typeof state.filters.sequence_min === "number" &&
+    record.sequence < state.filters.sequence_min
   ) {
     return false;
   }

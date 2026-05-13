@@ -51,8 +51,15 @@ export const dangerousCommandNames = [
 ] as const satisfies readonly ControlCommandName[];
 
 export interface RemoteIdentity {
+  client_identity: string;
   principal: string;
   source: "mtls" | "trusted_proxy";
+}
+
+export interface SupportedCommand {
+  name: ControlCommandName;
+  idempotent: boolean;
+  timeout_seconds: number;
 }
 
 export interface TargetSummary {
@@ -60,13 +67,20 @@ export interface TargetSummary {
   display_name: string;
   registration_state: RegistrationState;
   connection_state: ConnectionState;
-  authorization_scope: string;
+  supported_commands: SupportedCommand[];
 }
 
-export interface SessionEstablishedMessage {
-  type: "session_established";
+export interface ServerHelloMessage {
+  type: "server_hello";
   session_id: string;
-  identity: RemoteIdentity;
+  client_identity: string;
+  log_event_filter_mode: LogEventFilterMode;
+  log_event_filter_conditions: LogEventFilterConditions;
+  filter_config_version: number;
+}
+
+export interface TargetListMessage {
+  type: "target_list";
   targets: TargetSummary[];
 }
 
@@ -119,7 +133,6 @@ export interface RuntimeState {
 export interface TargetIdentity {
   target_id: string;
   display_name: string;
-  authorization_scope: string;
 }
 
 export interface EventRecord {
@@ -180,6 +193,7 @@ export interface ControlCommandTarget {
 export interface ControlCommandRequest {
   type: "command";
   command_id: string;
+  correlation_id?: string;
   target_id: string;
   command: ControlCommandName;
   target: ControlCommandTarget;
@@ -189,6 +203,7 @@ export interface ControlCommandRequest {
 
 export interface ControlCommandResult {
   command_id: string;
+  correlation_id?: string;
   target_id: string;
   accepted: boolean;
   status: "accepted" | "rejected" | "completed" | "failed";
@@ -209,19 +224,31 @@ export interface AuditEvent {
   occurred_at: string;
 }
 
-export interface FilterUpdate {
-  type: "filter_update";
+export type LogEventFilterMode = "remote" | "local";
+
+export interface LogEventFilterConditions {
   target_ids: string[];
   child_paths: string[];
   lifecycle_states: LifecycleState[];
   event_types: string[];
   severities: Severity[];
-  sequence_from?: number;
+  sequence_min?: number;
   correlation_id?: string;
 }
 
+export interface LogEventFilterConditionsMessage extends LogEventFilterConditions {
+  type: "log_event_filter_conditions";
+}
+
+export interface ClientHelloMessage {
+  type: "client_hello";
+  client_store_id: string;
+  resume_cursor: Record<string, never>;
+}
+
 export type ServerMessage =
-  | SessionEstablishedMessage
+  | ServerHelloMessage
+  | TargetListMessage
   | { type: "state"; target_id: string; state: DashboardState }
   | { type: "event"; target_id: string; event: EventRecord }
   | { type: "log"; target_id: string; log: LogRecord }
@@ -237,7 +264,7 @@ export type ServerMessage =
   | { type: "audit_event"; target_id: string; audit: AuditEvent }
   | { type: "error"; error: DashboardError };
 
-export type ClientMessage = ControlCommandRequest | FilterUpdate;
+export type ClientMessage = ClientHelloMessage | ControlCommandRequest | LogEventFilterConditionsMessage;
 
 export function isControlCommandName(value: string): value is ControlCommandName {
   return controlCommandNames.includes(value as ControlCommandName);

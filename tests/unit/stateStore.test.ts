@@ -2,19 +2,30 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { stateStore } from "@/state/stateStore";
 import { secondaryStateSample, validStateSample, validTargetsSample } from "./protocolSamples";
 
+const emptyConditions = {
+  target_ids: [],
+  child_paths: [],
+  lifecycle_states: [],
+  event_types: [],
+  severities: []
+};
+
 describe("stateStore", () => {
   beforeEach(() => {
     stateStore.reset();
   });
 
   it("stores session targets and selects the first connected target", () => {
-    stateStore.applySessionEstablished({
-      type: "session_established",
+    stateStore.applyServerHello({
+      type: "server_hello",
       session_id: "session-test",
-      identity: {
-        principal: "operator@example.test",
-        source: "mtls"
-      },
+      client_identity: "mtls_cert_fingerprint:test-client",
+      log_event_filter_mode: "remote",
+      log_event_filter_conditions: emptyConditions,
+      filter_config_version: 1
+    });
+    stateStore.applyTargetList({
+      type: "target_list",
       targets: validTargetsSample
     });
 
@@ -23,13 +34,16 @@ describe("stateStore", () => {
   });
 
   it("applies states and node selection", () => {
-    stateStore.applySessionEstablished({
-      type: "session_established",
+    stateStore.applyServerHello({
+      type: "server_hello",
       session_id: "session-test",
-      identity: {
-        principal: "operator@example.test",
-        source: "mtls"
-      },
+      client_identity: "mtls_cert_fingerprint:test-client",
+      log_event_filter_mode: "remote",
+      log_event_filter_conditions: emptyConditions,
+      filter_config_version: 1
+    });
+    stateStore.applyTargetList({
+      type: "target_list",
       targets: validTargetsSample
     });
     stateStore.applyDashboardState("payments-worker-a", validStateSample);
@@ -40,13 +54,16 @@ describe("stateStore", () => {
   });
 
   it("adds diagnostics for unavailable targets", () => {
-    stateStore.applySessionEstablished({
-      type: "session_established",
+    stateStore.applyServerHello({
+      type: "server_hello",
       session_id: "session-test",
-      identity: {
-        principal: "operator@example.test",
-        source: "mtls"
-      },
+      client_identity: "mtls_cert_fingerprint:test-client",
+      log_event_filter_mode: "remote",
+      log_event_filter_conditions: emptyConditions,
+      filter_config_version: 1
+    });
+    stateStore.applyTargetList({
+      type: "target_list",
       targets: validTargetsSample
     });
     stateStore.applyDashboardState("billing-worker-b", secondaryStateSample);
@@ -56,13 +73,16 @@ describe("stateStore", () => {
   });
 
   it("updates connection state from relay stream messages", () => {
-    stateStore.applySessionEstablished({
-      type: "session_established",
+    stateStore.applyServerHello({
+      type: "server_hello",
       session_id: "session-test",
-      identity: {
-        principal: "operator@example.test",
-        source: "mtls"
-      },
+      client_identity: "mtls_cert_fingerprint:test-client",
+      log_event_filter_mode: "remote",
+      log_event_filter_conditions: emptyConditions,
+      filter_config_version: 1
+    });
+    stateStore.applyTargetList({
+      type: "target_list",
       targets: validTargetsSample
     });
 
