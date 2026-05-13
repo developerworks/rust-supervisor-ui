@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { Activity, AlertCircle, Fingerprint, RadioTower, Server } from "lucide-vue-next";
+import { Activity, AlertCircle, Fingerprint, Github, RadioTower, Server } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import DashboardMenubar from "@/components/dashboard/DashboardMenubar.vue";
 import { InlineGroup, Section, Text } from "@/components/layout";
 import Badge from "@/components/ui/Badge.vue";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { eventStore } from "@/state/eventStore";
 import { stateStore } from "@/state/stateStore";
@@ -23,6 +24,7 @@ const targetCount = computed(() => stateStore.state.targets.length);
 const eventCount = computed(() => eventStore.allRecords.value.length);
 const failedNodeCount = computed(() => stateStore.stateCounts.value.failed ?? 0);
 const identityLabel = computed(() => stateStore.state.identity?.principal ?? t("app.waitingIdentity"));
+const repositoryUrl = "https://github.com/developerworks/rust-supervisor-ui";
 
 function connectionVariant(): "success" | "warning" | "danger" | "muted" {
   if (stateStore.state.connectionState === "established") {
@@ -96,6 +98,20 @@ function connectionVariant(): "success" | "warning" | "danger" | "muted" {
     </InlineGroup>
 
     <Separator class="xl:hidden" />
-    <DashboardMenubar :connection-pending="connectionPending" @reconnect="emit('reconnect')" />
+    <InlineGroup justify="end" class="gap-2">
+      <Button
+        as="a"
+        variant="ghost"
+        size="icon-sm"
+        :href="repositoryUrl"
+        target="_blank"
+        rel="noreferrer noopener"
+        :aria-label="t('menu.repository')"
+        data-testid="repository-link"
+      >
+        <Github aria-hidden="true" />
+      </Button>
+      <DashboardMenubar :connection-pending="connectionPending" @reconnect="emit('reconnect')" />
+    </InlineGroup>
   </Section>
 </template>

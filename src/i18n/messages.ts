@@ -17,7 +17,8 @@ export const messages = {
       language: "语言",
       theme: "主题",
       actions: "操作",
-      reconnect: "重新连接"
+      reconnect: "重新连接",
+      repository: "GitHub 仓库"
     },
     language: {
       zh: "中文",
@@ -38,8 +39,11 @@ export const messages = {
     blockingAlert: {
       invalidRelayTitle: "中继服务未配置",
       invalidRelayDescription: "VITE_SUPERVISOR_RELAY_URL 必须使用 wss:// 地址. 当前无法加载目标和监督树状态.",
+      drawerLabel: "中继阻塞提示",
       copyEnvironment: "复制环境变量名",
       showDiagnostics: "查看诊断",
+      expand: "展开",
+      collapse: "收起",
       copied: "环境变量名已复制",
       copyFailed: "环境变量名复制失败"
     },
@@ -272,7 +276,8 @@ export const messages = {
       language: "Language",
       theme: "Theme",
       actions: "Actions",
-      reconnect: "Reconnect"
+      reconnect: "Reconnect",
+      repository: "GitHub repository"
     },
     language: {
       zh: "Chinese",
@@ -293,8 +298,11 @@ export const messages = {
     blockingAlert: {
       invalidRelayTitle: "Relay is not configured",
       invalidRelayDescription: "VITE_SUPERVISOR_RELAY_URL must use a wss:// URL. Targets and supervisor tree state cannot load right now.",
+      drawerLabel: "Relay blocking alert",
       copyEnvironment: "Copy variable name",
       showDiagnostics: "View diagnostics",
+      expand: "Expand",
+      collapse: "Collapse",
       copied: "Environment variable name copied",
       copyFailed: "Environment variable name copy failed"
     },

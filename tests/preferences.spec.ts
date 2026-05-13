@@ -4,6 +4,10 @@ test("switches language through menubar and persists the locale", async ({ page 
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "目标进程" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub 仓库" })).toHaveAttribute(
+    "href",
+    "https://github.com/developerworks/rust-supervisor-ui"
+  );
   await expect(page.getByRole("combobox", { name: "command select" })).toContainText("暂停子任务");
   await expect(page.getByRole("combobox", { name: "event type filter" })).toContainText("全部事件类型");
   await expect(page.getByText("command(命令)")).toHaveCount(0);
@@ -13,6 +17,7 @@ test("switches language through menubar and persists the locale", async ({ page 
   await page.getByRole("menuitemradio", { name: "英文" }).click();
 
   await expect(page.getByRole("heading", { name: "Targets" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "GitHub repository" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Submit command/ })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "command select" })).toContainText("Pause child");
   await expect(page.getByRole("combobox", { name: "event type filter" })).toContainText("All event types");
