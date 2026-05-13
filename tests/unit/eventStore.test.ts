@@ -54,4 +54,40 @@ describe("eventStore", () => {
     expect(eventStore.droppedEventTotal.value).toBe(7);
     expect(eventStore.droppedLogTotal.value).toBe(3);
   });
+
+  it("loads command state delta events and logs", () => {
+    eventStore.applyStateDelta("payments-worker-a", {
+      recent_events: [
+        {
+          ...validStateSample.recent_events[0],
+          sequence: 7001,
+          event_type: "child_removed",
+          target_path: "/root/healthy_worker",
+          payload: {
+            child_path: "/root/healthy_worker",
+            lifecycle_state: "removed"
+          }
+        }
+      ],
+      recent_logs: [
+        {
+          ...validStateSample.recent_logs[0],
+          sequence: 8001,
+          correlation_id: "cmd-remove-healthy-worker",
+          message: "healthy worker remove_child completed",
+          fields: {
+            child_path: "/root/healthy_worker",
+            lifecycle_state: "removed"
+          }
+        }
+      ],
+      dropped_event_count: 9,
+      dropped_log_count: 4
+    });
+
+    expect(eventStore.state.events.some((event) => event.event_type === "child_removed")).toBe(true);
+    expect(eventStore.state.logs.some((log) => log.message.includes("remove_child"))).toBe(true);
+    expect(eventStore.droppedEventTotal.value).toBe(9);
+    expect(eventStore.droppedLogTotal.value).toBe(4);
+  });
 });

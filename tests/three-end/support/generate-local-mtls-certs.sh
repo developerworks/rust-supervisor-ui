@@ -19,6 +19,7 @@ OPERATOR_KEY="${WORK_DIR}/operator.key"
 OPERATOR_CSR="${WORK_DIR}/operator.csr"
 OPERATOR_CRT="${WORK_DIR}/operator.crt"
 OPERATOR_P12="${WORK_DIR}/operator.p12"
+OPERATOR_BROWSER_P12="${WORK_DIR}/operator-browser.p12"
 RELAY_EXT="${WORK_DIR}/relay.ext"
 OPERATOR_EXT="${WORK_DIR}/operator.ext"
 
@@ -58,14 +59,28 @@ openssl pkcs12 -export -out "${OPERATOR_P12}" \
   -certfile "${CA_CRT}" \
   -passout pass:
 
+openssl pkcs12 -export -legacy \
+  -name "rust-supervisor local operator" \
+  -caname "rust-supervisor local operator CA" \
+  -out "${OPERATOR_BROWSER_P12}" \
+  -inkey "${OPERATOR_KEY}" \
+  -in "${OPERATOR_CRT}" \
+  -certfile "${CA_CRT}" \
+  -passout pass:rust-supervisor
+
 cp "${RELAY_CRT}" "${RELAY_CERT_DIR}/relay.crt"
 cp "${RELAY_KEY}" "${RELAY_CERT_DIR}/relay.key"
 cp "${CA_CRT}" "${RELAY_CERT_DIR}/operators-ca.crt"
 cp "${OPERATOR_CRT}" "${UI_CERT_DIR}/operator.crt"
 cp "${OPERATOR_KEY}" "${UI_CERT_DIR}/operator.key"
 cp "${OPERATOR_P12}" "${UI_CERT_DIR}/operator.p12"
+cp "${OPERATOR_BROWSER_P12}" "${UI_CERT_DIR}/operator-browser.p12"
 cp "${CA_CRT}" "${UI_CERT_DIR}/operators-ca.crt"
 
-chmod 600 "${RELAY_CERT_DIR}/relay.key" "${UI_CERT_DIR}/operator.key"
+chmod 600 \
+  "${RELAY_CERT_DIR}/relay.key" \
+  "${UI_CERT_DIR}/operator.key" \
+  "${UI_CERT_DIR}/operator.p12" \
+  "${UI_CERT_DIR}/operator-browser.p12"
 
 printf 'local mTLS certificates written to %s and %s\n' "${RELAY_CERT_DIR}" "${UI_CERT_DIR}"

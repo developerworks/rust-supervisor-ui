@@ -2,6 +2,7 @@ import { computed, reactive } from "vue";
 import type {
   AuditEvent,
   DashboardState,
+  DashboardStateDelta,
   EventRecord,
   LogEventFilterConditionsMessage,
   LifecycleState,
@@ -118,6 +119,21 @@ function applyDashboardState(dashboardState: DashboardState): void {
     appendEvent(event);
   }
   for (const log of dashboardState.recent_logs) {
+    appendLog(log);
+  }
+}
+
+function applyStateDelta(targetId: string, delta: DashboardStateDelta): void {
+  if (typeof delta.dropped_event_count === "number") {
+    state.droppedEventsByTarget[targetId] = delta.dropped_event_count;
+  }
+  if (typeof delta.dropped_log_count === "number") {
+    state.droppedLogsByTarget[targetId] = delta.dropped_log_count;
+  }
+  for (const event of delta.recent_events ?? []) {
+    appendEvent(event);
+  }
+  for (const log of delta.recent_logs ?? []) {
     appendLog(log);
   }
 }
@@ -291,6 +307,7 @@ export const eventStore = {
   droppedEventTotal,
   droppedLogTotal,
   applyDashboardState,
+  applyStateDelta,
   appendEvent,
   appendLog,
   appendAudit,

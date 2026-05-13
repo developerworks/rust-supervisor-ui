@@ -173,7 +173,7 @@ function clearFilters(): void {
       <ListFilter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
     </PanelHeader>
 
-    <FormRoot class="grid gap-3" data-testid="filter-form" @submit="applyFilters">
+    <FormRoot class="grid gap-3 md:grid-cols-2 xl:grid-cols-4" data-testid="filter-form" @submit="applyFilters">
       <FieldStack>
         <Label for="target-filter">{{ t("filters.targetIdentity") }}</Label>
         <Select v-model="targetSelectValue">
@@ -257,7 +257,7 @@ function clearFilters(): void {
         <Label for="correlation-filter">{{ t("filters.correlationId") }}</Label>
         <Input id="correlation-filter" v-model="correlationId" aria-label="correlation filter" placeholder="restart-7" />
       </FieldStack>
-      <InlineGroup class="items-end gap-2">
+      <InlineGroup class="items-end gap-2 md:col-span-2 xl:col-span-4 xl:justify-end">
         <Button type="submit" class="flex-1">
           <ListFilter class="h-4 w-4" aria-hidden="true" />
           {{ t("common.apply") }}

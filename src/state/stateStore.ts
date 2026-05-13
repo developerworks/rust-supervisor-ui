@@ -149,18 +149,34 @@ function applyStateDelta(targetId: string, delta: DashboardStateDelta): void {
     dashboardState.state_generation = delta.state_generation;
   }
 
+  if (delta.topology) {
+    dashboardState.topology = delta.topology;
+  }
+
   if (delta.runtime_state) {
-    for (const runtimeState of delta.runtime_state) {
-      upsertRuntimeState(dashboardState.runtime_state, runtimeState);
-      const node = dashboardState.topology.nodes.find((item) => item.path === runtimeState.child_path);
-      if (node) {
-        node.state_summary = runtimeState.lifecycle_state;
+    if (delta.topology) {
+      dashboardState.runtime_state = [...delta.runtime_state];
+    } else {
+      for (const runtimeState of delta.runtime_state) {
+        upsertRuntimeState(dashboardState.runtime_state, runtimeState);
+        const node = dashboardState.topology.nodes.find((item) => item.path === runtimeState.child_path);
+        if (node) {
+          node.state_summary = runtimeState.lifecycle_state;
+        }
       }
     }
   }
 
   if (delta.connection_state) {
     setTargetConnectionState(targetId, delta.connection_state);
+  }
+
+  if (
+    state.selectedTargetId === targetId &&
+    state.selectedNodePath &&
+    !dashboardState.topology.nodes.some((node) => node.path === state.selectedNodePath)
+  ) {
+    state.selectedNodePath = dashboardState.topology.root.path;
   }
 }
 

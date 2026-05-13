@@ -4,6 +4,7 @@ import DashboardBlockingAlert from "@/components/dashboard/DashboardBlockingAler
 import DashboardInspector from "@/components/dashboard/DashboardInspector.vue";
 import DashboardLogWorkspace from "@/components/dashboard/DashboardLogWorkspace.vue";
 import DashboardStatusStrip from "@/components/dashboard/DashboardStatusStrip.vue";
+import RuntimeStatePanel from "@/components/dashboard/RuntimeStatePanel.vue";
 import { Box, Grid, Section, Stack } from "@/components/layout";
 import type { ClientMessage, ControlCommandRequest, ControlCommandResult } from "@/types/protocol";
 
@@ -50,6 +51,10 @@ function showDiagnostics(): void {
         <Stack gap="lg" class="min-w-0" data-testid="dashboard-main-column">
           <Section class="min-w-0" data-testid="dashboard-main-content">
             <TopologyCanvas />
+          </Section>
+
+          <Section class="min-w-0" data-testid="dashboard-runtime-state">
+            <RuntimeStatePanel />
           </Section>
 
           <Section class="min-w-0">

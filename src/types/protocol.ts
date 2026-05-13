@@ -173,7 +173,12 @@ export interface DashboardState {
 
 export interface DashboardStateDelta {
   state_generation?: number;
+  topology?: SupervisorTopology;
   runtime_state?: RuntimeState[];
+  recent_events?: EventRecord[];
+  recent_logs?: LogRecord[];
+  dropped_event_count?: number;
+  dropped_log_count?: number;
   connection_state?: ConnectionState;
 }
 

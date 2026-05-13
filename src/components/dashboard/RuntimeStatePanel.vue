@@ -59,10 +59,10 @@ function stateVariant(state?: LifecycleState): "success" | "warning" | "danger" 
         <ListItem
           v-for="runtimeState in runtimeStates"
           :key="runtimeState.child_path"
-          class="grid gap-3 p-3 text-sm lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+          class="grid items-start gap-3 p-3 text-sm lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
         >
           <Box class="min-w-0">
-            <Text class="truncate font-semibold text-foreground">{{ runtimeState.child_path }}</Text>
+            <Text class="break-all font-semibold leading-snug text-foreground">{{ runtimeState.child_path }}</Text>
             <Text class="mt-1 text-xs text-muted-foreground">
               {{ t("runtime.generationAndAttempt", { generation: runtimeState.generation, attempt: runtimeState.attempt }) }}
             </Text>

@@ -62,6 +62,7 @@ function handleServerMessage(message: ServerMessage): void {
       break;
     case "state_delta":
       stateStore.applyStateDelta(message.target_id, message.delta);
+      eventStore.applyStateDelta(message.target_id, message.delta);
       break;
     case "dropped_count":
       eventStore.setDroppedCount(
@@ -88,6 +89,7 @@ function handleServerMessage(message: ServerMessage): void {
       toast.success(t("toast.commandCompleted"));
       if (message.result.state_delta) {
         stateStore.applyStateDelta(message.target_id, message.result.state_delta);
+        eventStore.applyStateDelta(message.target_id, message.result.state_delta);
       }
       break;
     case "audit_event":

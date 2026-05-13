@@ -153,8 +153,15 @@ export const messages = {
     },
     eventType: {
       child_started: "子任务已启动",
+      child_running: "子任务运行中",
       child_failed: "子任务失败",
       child_restarted: "子任务已重启",
+      child_paused: "子任务已暂停",
+      child_resumed: "子任务已恢复",
+      child_quarantined: "子任务已隔离",
+      child_removed: "子任务已移除",
+      child_added: "子任务已添加",
+      tree_stopped: "监督树已停止",
       command_audit: "命令审计"
     },
     commandStatus: {
@@ -221,7 +228,24 @@ export const messages = {
       logTitle: "日志记录",
       auditTitle: "命令审计: {command}",
       eventDetail: "路径: {path}, 关联标识: {correlationId}",
-      auditDetail: "路径: {path}, 原因: {reason}"
+      lifecycleTransition: "状态转移: {from} -> {to}",
+      auditDetail: "路径: {path}, 原因: {reason}",
+      previousPage: "上一页",
+      nextPage: "下一页",
+      paginationSummary: "第 {page}/{pages} 页, 显示 {start}-{end}, 共 {total} 条",
+      columns: {
+        sequence: "序列",
+        kind: "类型",
+        severity: "严重级别",
+        target: "目标",
+        summary: "摘要",
+        detail: "详情"
+      },
+      kind: {
+        event: "事件",
+        log: "日志",
+        audit: "审计"
+      }
     },
     nodeDetail: {
       chooseNode: "请选择监督节点.",
@@ -412,8 +436,15 @@ export const messages = {
     },
     eventType: {
       child_started: "Child started",
+      child_running: "Child running",
       child_failed: "Child failed",
       child_restarted: "Child restarted",
+      child_paused: "Child paused",
+      child_resumed: "Child resumed",
+      child_quarantined: "Child quarantined",
+      child_removed: "Child removed",
+      child_added: "Child added",
+      tree_stopped: "Tree stopped",
       command_audit: "Command audit"
     },
     commandStatus: {
@@ -480,7 +511,24 @@ export const messages = {
       logTitle: "Log record",
       auditTitle: "Command audit: {command}",
       eventDetail: "{path}, correlation ID: {correlationId}",
-      auditDetail: "{path}, reason: {reason}"
+      lifecycleTransition: "Lifecycle transition: {from} -> {to}",
+      auditDetail: "{path}, reason: {reason}",
+      previousPage: "Previous",
+      nextPage: "Next",
+      paginationSummary: "Page {page} of {pages}, showing {start}-{end} of {total}",
+      columns: {
+        sequence: "Sequence",
+        kind: "Type",
+        severity: "Severity",
+        target: "Target",
+        summary: "Summary",
+        detail: "Detail"
+      },
+      kind: {
+        event: "Event",
+        log: "Log",
+        audit: "Audit"
+      }
     },
     nodeDetail: {
       chooseNode: "Select a supervisor node.",

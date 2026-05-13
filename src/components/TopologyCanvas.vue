@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
+import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
-import { VueFlow, type Edge, type Node, type NodeMouseEvent, useVueFlow } from "@vue-flow/core";
+import { VueFlow, type Node, type NodeMouseEvent, useVueFlow } from "@vue-flow/core";
 import { AlertTriangle, Info, Maximize2, Network, RefreshCw, Search } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import { Box, Grid, InlineGroup, InteractiveRow, PanelHeader, Text } from "@/components/layout";
+import OffsetBezierEdge from "@/components/topology/OffsetBezierEdge.vue";
+import { buildTopologyFlowEdges, topologyEdgeType } from "@/components/topology/edgeLayout";
+import { buildTopologyNodePositions } from "@/components/topology/nodeLayout";
 import Badge from "@/components/ui/Badge.vue";
 import Button from "@/components/ui/Button.vue";
 import Card from "@/components/ui/Card.vue";
@@ -30,6 +33,10 @@ const searchQuery = ref("");
 const failedOnly = ref(false);
 const legendOpen = ref(false);
 const layoutVersion = ref(0);
+const canvasFocused = ref(false);
+const edgeTypes = markRaw({
+  [topologyEdgeType]: OffsetBezierEdge
+});
 
 const visibleTopologyNodes = computed(() => {
   const topology = state.value?.topology;
@@ -49,6 +56,14 @@ const visibleTopologyNodes = computed(() => {
 
 const visibleNodePaths = computed(() => new Set(visibleTopologyNodes.value.map((node) => node.path)));
 
+const flowNodePositions = computed(() => {
+  const topology = state.value?.topology;
+  if (!topology) {
+    return new Map<string, { x: number; y: number }>();
+  }
+  return buildTopologyNodePositions(visibleTopologyNodes.value, topology.edges);
+});
+
 const flowNodes = computed<Node[]>(() => {
   if (!state.value) {
     return [];
@@ -56,7 +71,7 @@ const flowNodes = computed<Node[]>(() => {
   return visibleTopologyNodes.value.map((node, index) => ({
     id: node.path,
     label: nodeLabel(node),
-    position: positionFor(index + layoutVersion.value * 0),
+    position: flowNodePositions.value.get(node.path) ?? { x: 80 + index * 240, y: 30 },
     data: { label: nodeLabel(node) },
     class: [
       "supervisor-node",
@@ -67,31 +82,13 @@ const flowNodes = computed<Node[]>(() => {
   }));
 });
 
-const flowEdges = computed<Edge[]>(() => {
+const flowEdges = computed(() => {
   const topology = state.value?.topology;
   if (!topology) {
     return [];
   }
-  return topology.edges
-    .filter((edge) => visibleNodePaths.value.has(edge.source_path) && visibleNodePaths.value.has(edge.target_path))
-    .map((edge) => ({
-      id: edge.edge_id,
-      source: edge.source_path,
-      target: edge.target_path,
-      animated: edge.kind === "dependency",
-      label: edge.kind === "dependency" ? t("topology.dependencyLabel") : undefined,
-      type: "smoothstep"
-    }));
+  return buildTopologyFlowEdges(topology.edges, visibleNodePaths.value, t("topology.dependencyLabel"));
 });
-
-function positionFor(index: number): { x: number; y: number } {
-  if (index === 0) {
-    return { x: 320, y: 30 };
-  }
-  const column = (index - 1) % 3;
-  const row = Math.floor((index - 1) / 3);
-  return { x: 80 + column * 260, y: 160 + row * 150 };
-}
 
 function nodeLabel(node: SupervisorNode): string {
   return `${node.name}\n${protocolLabels.stateSummary(node.state_summary)}`;
@@ -118,6 +115,15 @@ function selectFlowNode(event: NodeMouseEvent): void {
   stateStore.selectNode(event.node.id);
 }
 
+function handleGlobalPointerDown(event: PointerEvent): void {
+  const target = event.target;
+  canvasFocused.value = target instanceof Element && Boolean(target.closest('[data-testid="topology-canvas"]'));
+}
+
+function clearTopologyCanvasFocus(): void {
+  canvasFocused.value = false;
+}
+
 async function fitTopologyView(): Promise<void> {
   await nextTick();
   fitView({ padding: 0.18, duration: 200 });
@@ -127,6 +133,16 @@ async function relayoutTopology(): Promise<void> {
   layoutVersion.value += 1;
   await fitTopologyView();
 }
+
+onMounted(() => {
+  window.addEventListener("pointerdown", handleGlobalPointerDown, true);
+  window.addEventListener("blur", clearTopologyCanvasFocus);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("pointerdown", handleGlobalPointerDown, true);
+  window.removeEventListener("blur", clearTopologyCanvasFocus);
+});
 </script>
 
 <template>
@@ -204,14 +220,25 @@ async function relayoutTopology(): Promise<void> {
         </EmptyHeader>
       </Empty>
 
-      <Box v-else class="h-[26rem] overflow-hidden rounded-md border bg-muted" data-testid="topology-canvas">
+      <Box
+        v-else
+        class="h-[26rem] overflow-hidden rounded-md border bg-muted transition focus-visible:outline-none"
+        :class="canvasFocused ? 'border-primary ring-2 ring-primary/30' : 'border-border'"
+        data-testid="topology-canvas"
+        tabindex="0"
+        @keydown.escape.stop="clearTopologyCanvasFocus"
+      >
         <VueFlow
           :key="layoutVersion"
           :nodes="flowNodes"
           :edges="flowEdges"
+          :edge-types="edgeTypes"
           :fit-view-on-init="true"
           :min-zoom="0.55"
           :max-zoom="1.25"
+          :prevent-scrolling="canvasFocused"
+          :zoom-on-pinch="canvasFocused"
+          :zoom-on-scroll="canvasFocused"
           @node-click="selectFlowNode"
         >
           <Background pattern-color="#cbd5e1" :gap="18" />
