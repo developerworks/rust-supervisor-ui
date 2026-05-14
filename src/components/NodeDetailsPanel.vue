@@ -24,6 +24,7 @@ import {
   EmptyTitle
 } from "@/components/ui/empty";
 import { useProtocolLabels } from "@/i18n/protocolLabels";
+import { displayTaskPath } from "@/lib/taskPath";
 import { eventStore } from "@/state/eventStore";
 import { stateStore } from "@/state/stateStore";
 import type { LifecycleState } from "@/types/protocol";
@@ -82,7 +83,7 @@ function stateVariant(state?: LifecycleState): "success" | "warning" | "danger" 
         <InlineGroup align="start" justify="between" class="gap-3">
           <Box class="min-w-0">
             <Heading level="3" class="truncate text-base font-semibold leading-6 text-foreground">{{ detail.node.name }}</Heading>
-            <Text class="truncate text-xs text-muted-foreground">{{ detail.node.path }}</Text>
+            <Text class="truncate text-xs text-muted-foreground">{{ displayTaskPath(detail.node.path) }}</Text>
           </Box>
           <Badge :variant="stateVariant(detail.runtimeState?.lifecycle_state)">
             {{ detail.runtimeState ? protocolLabels.lifecycle(detail.runtimeState.lifecycle_state) : protocolLabels.stateSummary(detail.node.state_summary) }}

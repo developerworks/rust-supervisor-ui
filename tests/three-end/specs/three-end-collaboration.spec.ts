@@ -24,7 +24,7 @@ test("runs the real supervisor relay supervisor UI collaboration path", async ({
   await page.getByRole("option", { name: "错误" }).click();
   await expect(page.getByTestId("event-log")).toContainText("子任务失败");
 
-  await expect(page.getByTestId("command-target-path")).toContainText("/root/duplicate_guard");
+  await expect(page.getByTestId("command-target-path")).toContainText("/root/duplicate-guard");
   await page.getByLabel("command reason").fill("three end collaboration test");
   await page.getByRole("combobox", { name: "command select" }).click();
   await page.getByRole("option", { name: "暂停子任务" }).click();

@@ -21,6 +21,7 @@ import {
   EmptyTitle
 } from "@/components/ui/empty";
 import { useProtocolLabels } from "@/i18n/protocolLabels";
+import { displayTaskPath } from "@/lib/taskPath";
 import { stateStore } from "@/state/stateStore";
 import type { LifecycleState, SupervisorNode } from "@/types/protocol";
 
@@ -54,10 +55,12 @@ const visibleTopologyNodes = computed(() => {
   }
   const query = searchQuery.value.trim().toLowerCase();
   return topology.nodes.filter((node) => {
+    const renderedPath = displayTaskPath(node.path).toLowerCase();
     const matchesSearch =
       !query ||
       node.name.toLowerCase().includes(query) ||
-      node.path.toLowerCase().includes(query);
+      node.path.toLowerCase().includes(query) ||
+      renderedPath.includes(query);
     const matchesFailure = !failedOnly.value || isFailureState(node.state_summary);
     return matchesSearch && matchesFailure;
   });
@@ -346,7 +349,7 @@ onBeforeUnmount(() => {
           @click="stateStore.selectNode(node.path)"
         >
           <Text as="span" class="block font-semibold text-foreground">{{ node.name }}</Text>
-          <Text as="span" class="block truncate text-muted-foreground">{{ node.path }}</Text>
+          <Text as="span" class="block truncate text-muted-foreground">{{ displayTaskPath(node.path) }}</Text>
         </InteractiveRow>
       </Grid>
     </template>

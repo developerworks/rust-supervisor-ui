@@ -22,6 +22,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import Textarea from "@/components/ui/Textarea.vue";
 import ConfirmCommandDialog from "@/components/ConfirmCommandDialog.vue";
+import { displayTaskPath } from "@/lib/taskPath";
 import { stateStore } from "@/state/stateStore";
 import type { ControlCommandName, ControlCommandRequest } from "@/types/protocol";
 import { createCommandId, isDangerousCommandName } from "@/types/protocol";
@@ -156,7 +157,7 @@ function buildRequest(confirmed: boolean, nextReason: string): ControlCommandReq
             class="flex h-9 min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-md border bg-muted px-3 text-sm text-foreground"
             data-testid="command-target-path"
           >
-            {{ selectedNode?.path ?? t("control.noNode") }}
+            {{ selectedNode ? displayTaskPath(selectedNode.path) : t("control.noNode") }}
           </Box>
         </FieldStack>
       </Grid>
@@ -180,7 +181,7 @@ function buildRequest(confirmed: boolean, nextReason: string): ControlCommandReq
     <ConfirmCommandDialog
       :open="confirmOpen"
       :command="command"
-      :target-path="selectedNode?.path ?? '/root'"
+      :target-path="displayTaskPath(selectedNode?.path ?? '/root')"
       :reason="reason"
       @close="confirmOpen = false"
       @confirm="confirmDangerous"

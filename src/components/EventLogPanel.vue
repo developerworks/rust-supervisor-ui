@@ -22,6 +22,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { useProtocolLabels } from "@/i18n/protocolLabels";
+import { displayTaskPath } from "@/lib/taskPath";
 import { eventStore, type TimelineRecord } from "@/state/eventStore";
 import type { LogEventFilterConditionsMessage } from "@/types/protocol";
 
@@ -54,7 +55,7 @@ function detail(record: TimelineRecord): string {
   if (record.kind === "event") {
     const eventDetail = t("eventLog.eventDetail", {
       correlationId: record.event.correlation_id,
-      path: record.event.target_path
+      path: displayTaskPath(record.event.target_path)
     });
     return transition ? `${eventDetail}\n${transition}` : eventDetail;
   }
@@ -62,7 +63,7 @@ function detail(record: TimelineRecord): string {
     return transition ? `${record.log.message}\n${transition}` : record.log.message;
   }
   return t("eventLog.auditDetail", {
-    path: record.audit.target.child_path ?? "/root",
+    path: displayTaskPath(record.audit.target.child_path ?? "/root"),
     reason: record.audit.reason
   });
 }

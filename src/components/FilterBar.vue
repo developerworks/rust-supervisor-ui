@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { eventStore } from "@/state/eventStore";
 import { useProtocolLabels } from "@/i18n/protocolLabels";
+import { displayTaskPath } from "@/lib/taskPath";
 import { stateStore } from "@/state/stateStore";
 import type { LogEventFilterConditionsMessage, LifecycleState, Severity } from "@/types/protocol";
 
@@ -54,7 +55,7 @@ const childPathOptions = computed(() => {
   });
   return [
     { value: allChildPathValue, label: t("filters.allChildTasks") },
-    ...Array.from(paths).map((path) => ({ value: path, label: path }))
+    ...Array.from(paths).map((path) => ({ value: path, label: displayTaskPath(path) }))
   ];
 });
 

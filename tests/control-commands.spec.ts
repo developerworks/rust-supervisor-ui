@@ -4,7 +4,7 @@ test("validates reason, confirmation and command result", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("button", { name: /duplicate guard/ }).first().click();
-  await expect(page.getByTestId("command-target-path")).toContainText("/root/duplicate_guard");
+  await expect(page.getByTestId("command-target-path")).toContainText("/root/duplicate-guard");
   await expect(page.getByTestId("command-target-path")).toHaveCSS("white-space", "nowrap");
   await page.getByRole("button", { name: /提交命令/ }).click();
   await expect(page.getByText("原因必填.")).toBeVisible();
