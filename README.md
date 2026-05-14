@@ -1,6 +1,6 @@
 # Rust Supervisor Dashboard Client(看板客户端)
 
-这个目录实现 `specs/003-supervisor-dashboard` 中的 dashboard client(看板客户端). 生产代码只放在 `/Users/0x00/Documents/rust-supervisor-ui`, 并且只通过 `wss://` WebSocket(网络套接字协议) contract(契约) 消费 relay(中继) 暴露的 session(会话), state(状态), event(事件), log(日志), state delta(状态增量), command result(命令结果) 和 error(错误).
+这个目录实现 `specs/003-supervisor-dashboard` 中的 dashboard client(看板客户端). 生产代码只放在 `~/rust-supervisor-ui`, 并且只通过 `wss://` WebSocket(网络套接字协议) contract(契约) 消费 relay(中继) 暴露的 session(会话), state(状态), event(事件), log(日志), state delta(状态增量), command result(命令结果) 和 error(错误).
 
 ## 技术基线
 

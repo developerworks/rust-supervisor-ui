@@ -2,7 +2,7 @@
 
 ## 范围
 
-本报告覆盖 `/Users/0x00/Documents/rust-supervisor-ui` 中的 UI(用户界面) 任务. 当前实现不修改 `/Users/0x00/Documents/rust-supervisor`, 不修改 `/Users/0x00/Documents/rust-supervisor-relay`, 也不编辑 `specs/003-supervisor-dashboard/tasks.md`.
+本报告覆盖 `~/rust-supervisor-ui` 中的 UI(用户界面) 任务. 当前实现不修改 `~/rust-supervisor`, 不修改 `~/rust-supervisor-relay`, 也不编辑 `specs/003-supervisor-dashboard/tasks.md`.
 
 ## 已实现
 
@@ -27,5 +27,5 @@
 
 - 当前 UI(用户界面) 只接受 `VITE_SUPERVISOR_RELAY_URL=wss://...` 作为 relay(中继) 地址. 浏览器测试通过本地 TLS(传输层安全协议) WebSocket(网络套接字协议) 协议测试服务验证真实连接路径.
 - `wss://` WebSocket(网络套接字协议) 适配已经实现, 但 mTLS(双向传输层安全协议认证) 握手由浏览器和 relay(中继) 负责, 前端单元测试不会证明真实证书链有效.
-- T074 对应 `/Users/0x00/Documents/rust-supervisor-relay` 的 `cargo test`. 本轮按用户给定写入范围只处理 `/Users/0x00/Documents/rust-supervisor-ui`, 因此没有执行 relay(中继) 仓库测试.
+- T074 对应 `~/rust-supervisor-relay` 的 `cargo test`. 本轮按用户给定写入范围只处理 `~/rust-supervisor-ui`, 因此没有执行 relay(中继) 仓库测试.
 - Playwright(浏览器测试工具) 输出了 `NO_COLOR` 和 `FORCE_COLOR` 环境变量警告, 但测试全部通过, 该警告没有影响 UI(用户界面) 行为.
